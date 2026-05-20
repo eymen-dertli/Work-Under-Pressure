@@ -5,7 +5,7 @@ public class MenuController : MonoBehaviour
 {
     public void PlayGame()
     {
-        SceneManager.LoadScene("Game1Scene");
+        LevelProgression.TryLoadLevel(1);
     }
 
     public GameObject mainMenuPanel;
@@ -15,5 +15,23 @@ public class MenuController : MonoBehaviour
     {
         levelsPanel.SetActive(true);
         mainMenuPanel.SetActive(false);
+
+        LevelSelectController controller = levelsPanel.GetComponent<LevelSelectController>();
+        if (controller == null)
+        {
+            controller = levelsPanel.AddComponent<LevelSelectController>();
+        }
+
+        controller.Refresh();
+    }
+
+    public void ResetLevelProgress()
+    {
+        LevelProgression.ResetProgress();
+
+        if (levelsPanel != null && levelsPanel.TryGetComponent(out LevelSelectController controller))
+        {
+            controller.Refresh();
+        }
     }
 }

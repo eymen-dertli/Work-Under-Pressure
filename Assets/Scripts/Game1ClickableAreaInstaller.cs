@@ -4,7 +4,6 @@ using UnityEngine.SceneManagement;
 
 public sealed class Game1ClickableAreaInstaller : MonoBehaviour
 {
-    private const string SceneName = "Game1Scene";
     private const string RootName = "_ClickableDeskObjects";
     private const string BackgroundObjectName = "ChatGPT Image 20 May 2026 04_44_35_0";
     private const float SourceWidth = 1536f;
@@ -61,7 +60,7 @@ public sealed class Game1ClickableAreaInstaller : MonoBehaviour
 
     private static void InstallForScene(Scene scene)
     {
-        if (scene.name != SceneName || GameObject.Find(RootName) != null)
+        if (!IsLevelScene(scene.name) || GameObject.Find(RootName) != null)
         {
             return;
         }
@@ -89,6 +88,12 @@ public sealed class Game1ClickableAreaInstaller : MonoBehaviour
         }
 
         return Object.FindAnyObjectByType<SpriteRenderer>();
+    }
+
+    private static bool IsLevelScene(string sceneName)
+    {
+        LevelDefinition level = LevelDatabase.Load().GetLevelBySceneName(sceneName);
+        return level != null;
     }
 
     private static void EnsurePhysicsRaycaster()

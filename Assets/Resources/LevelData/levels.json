@@ -1,0 +1,22 @@
+{
+  "levels": [
+    {
+      "levelNumber": 1,
+      "displayName": "Bolum 1",
+      "sceneName": "Game1Scene",
+      "unlockedByDefault": true
+    },
+    {
+      "levelNumber": 2,
+      "displayName": "Bolum 2",
+      "sceneName": "Game2Scene",
+      "unlockedByDefault": false
+    },
+    {
+      "levelNumber": 3,
+      "displayName": "Bolum 3",
+      "sceneName": "Game3Scene",
+      "unlockedByDefault": false
+    }
+  ]
+}
