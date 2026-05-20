@@ -1,0 +1,581 @@
+﻿{
+    "source":  "ChatGPT Image 20 May 2026 04_44_35.png",
+    "sourceSize":  [
+                       1536,
+                       1024
+                   ],
+    "style":  "clean 2D game asset cutouts matching the reference illustration",
+    "transparentBackground":  true,
+    "objects":  [
+                    {
+                        "name":  "window_blinds",
+                        "sourceRect":  [
+                                           0,
+                                           0,
+                                           132,
+                                           254
+                                       ],
+                        "file":  "window_blinds.png"
+                    },
+                    {
+                        "name":  "desk_lamp",
+                        "sourceRect":  [
+                                           150,
+                                           88,
+                                           220,
+                                           286
+                                       ],
+                        "file":  "desk_lamp.png"
+                    },
+                    {
+                        "name":  "coffee_mug",
+                        "sourceRect":  [
+                                           275,
+                                           332,
+                                           105,
+                                           117
+                                       ],
+                        "file":  "coffee_mug.png"
+                    },
+                    {
+                        "name":  "wall_sticky_planli",
+                        "sourceRect":  [
+                                           333,
+                                           66,
+                                           69,
+                                           74
+                                       ],
+                        "file":  "wall_sticky_planli.png"
+                    },
+                    {
+                        "name":  "cork_board",
+                        "sourceRect":  [
+                                           450,
+                                           0,
+                                           390,
+                                           214
+                                       ],
+                        "file":  "cork_board.png"
+                    },
+                    {
+                        "name":  "daily_goals_paper",
+                        "sourceRect":  [
+                                           484,
+                                           22,
+                                           155,
+                                           166
+                                       ],
+                        "file":  "daily_goals_paper.png"
+                    },
+                    {
+                        "name":  "blue_focus_note",
+                        "sourceRect":  [
+                                           687,
+                                           54,
+                                           75,
+                                           71
+                                       ],
+                        "file":  "blue_focus_note.png"
+                    },
+                    {
+                        "name":  "pink_meeting_note",
+                        "sourceRect":  [
+                                           732,
+                                           133,
+                                           75,
+                                           61
+                                       ],
+                        "file":  "pink_meeting_note.png"
+                    },
+                    {
+                        "name":  "wall_clock",
+                        "sourceRect":  [
+                                           986,
+                                           21,
+                                           133,
+                                           130
+                                       ],
+                        "file":  "wall_clock.png"
+                    },
+                    {
+                        "name":  "top_paper_tray",
+                        "sourceRect":  [
+                                           383,
+                                           242,
+                                           150,
+                                           135
+                                       ],
+                        "file":  "top_paper_tray.png"
+                    },
+                    {
+                        "name":  "pen_cup_stationery",
+                        "sourceRect":  [
+                                           548,
+                                           215,
+                                           98,
+                                           137
+                                       ],
+                        "file":  "pen_cup_stationery.png"
+                    },
+                    {
+                        "name":  "desk_calendar",
+                        "sourceRect":  [
+                                           666,
+                                           235,
+                                           101,
+                                           118
+                                       ],
+                        "file":  "desk_calendar.png"
+                    },
+                    {
+                        "name":  "mail_monitor",
+                        "sourceRect":  [
+                                           833,
+                                           134,
+                                           300,
+                                           235
+                                       ],
+                        "file":  "mail_monitor.png"
+                    },
+                    {
+                        "name":  "telephone",
+                        "sourceRect":  [
+                                           1090,
+                                           170,
+                                           207,
+                                           225
+                                       ],
+                        "file":  "telephone.png"
+                    },
+                    {
+                        "name":  "right_large_plant",
+                        "sourceRect":  [
+                                           1303,
+                                           49,
+                                           233,
+                                           286
+                                       ],
+                        "file":  "right_large_plant.png"
+                    },
+                    {
+                        "name":  "printer",
+                        "sourceRect":  [
+                                           1289,
+                                           285,
+                                           218,
+                                           324
+                                       ],
+                        "file":  "printer.png"
+                    },
+                    {
+                        "name":  "small_succulent",
+                        "sourceRect":  [
+                                           1244,
+                                           363,
+                                           77,
+                                           91
+                                       ],
+                        "file":  "small_succulent.png"
+                    },
+                    {
+                        "name":  "left_window_plant",
+                        "sourceRect":  [
+                                           31,
+                                           166,
+                                           108,
+                                           117
+                                       ],
+                        "file":  "left_window_plant.png"
+                    },
+                    {
+                        "name":  "left_floor_plant",
+                        "sourceRect":  [
+                                           0,
+                                           296,
+                                           77,
+                                           132
+                                       ],
+                        "file":  "left_floor_plant.png"
+                    },
+                    {
+                        "name":  "left_binder_shelf",
+                        "sourceRect":  [
+                                           0,
+                                           466,
+                                           91,
+                                           150
+                                       ],
+                        "file":  "left_binder_shelf.png"
+                    },
+                    {
+                        "name":  "incoming_mail_tray",
+                        "sourceRect":  [
+                                           92,
+                                           456,
+                                           283,
+                                           296
+                                       ],
+                        "file":  "incoming_mail_tray.png"
+                    },
+                    {
+                        "name":  "customer_files",
+                        "sourceRect":  [
+                                           409,
+                                           428,
+                                           207,
+                                           292
+                                       ],
+                        "file":  "customer_files.png"
+                    },
+                    {
+                        "name":  "contract_clipboard",
+                        "sourceRect":  [
+                                           603,
+                                           418,
+                                           218,
+                                           303
+                                       ],
+                        "file":  "contract_clipboard.png"
+                    },
+                    {
+                        "name":  "date_stamp",
+                        "sourceRect":  [
+                                           846,
+                                           437,
+                                           111,
+                                           99
+                                       ],
+                        "file":  "date_stamp.png"
+                    },
+                    {
+                        "name":  "notepad_pen",
+                        "sourceRect":  [
+                                           838,
+                                           558,
+                                           128,
+                                           158
+                                       ],
+                        "file":  "notepad_pen.png"
+                    },
+                    {
+                        "name":  "completed_folder_tray",
+                        "sourceRect":  [
+                                           1046,
+                                           440,
+                                           238,
+                                           287
+                                       ],
+                        "file":  "completed_folder_tray.png"
+                    },
+                    {
+                        "name":  "active_work_mat",
+                        "sourceRect":  [
+                                           405,
+                                           399,
+                                           600,
+                                           332
+                                       ],
+                        "file":  "active_work_mat.png"
+                    },
+                    {
+                        "name":  "incoming_label",
+                        "sourceRect":  [
+                                           188,
+                                           453,
+                                           107,
+                                           30
+                                       ],
+                        "file":  "incoming_label.png"
+                    },
+                    {
+                        "name":  "active_area_label",
+                        "sourceRect":  [
+                                           634,
+                                           405,
+                                           137,
+                                           28
+                                       ],
+                        "file":  "active_area_label.png"
+                    },
+                    {
+                        "name":  "completed_label",
+                        "sourceRect":  [
+                                           1050,
+                                           442,
+                                           138,
+                                           32
+                                       ],
+                        "file":  "completed_label.png"
+                    },
+                    {
+                        "name":  "left_open_drawer",
+                        "sourceRect":  [
+                                           74,
+                                           741,
+                                           340,
+                                           257
+                                       ],
+                        "file":  "left_open_drawer.png"
+                    },
+                    {
+                        "name":  "stapler",
+                        "sourceRect":  [
+                                           120,
+                                           784,
+                                           70,
+                                           95
+                                       ],
+                        "file":  "stapler.png"
+                    },
+                    {
+                        "name":  "hole_punch",
+                        "sourceRect":  [
+                                           213,
+                                           786,
+                                           63,
+                                           54
+                                       ],
+                        "file":  "hole_punch.png"
+                    },
+                    {
+                        "name":  "paperclips_box",
+                        "sourceRect":  [
+                                           308,
+                                           770,
+                                           88,
+                                           83
+                                       ],
+                        "file":  "paperclips_box.png"
+                    },
+                    {
+                        "name":  "binder_clips",
+                        "sourceRect":  [
+                                           92,
+                                           860,
+                                           111,
+                                           66
+                                       ],
+                        "file":  "binder_clips.png"
+                    },
+                    {
+                        "name":  "sticky_note_stacks",
+                        "sourceRect":  [
+                                           220,
+                                           856,
+                                           104,
+                                           71
+                                       ],
+                        "file":  "sticky_note_stacks.png"
+                    },
+                    {
+                        "name":  "tape_roll",
+                        "sourceRect":  [
+                                           335,
+                                           849,
+                                           65,
+                                           75
+                                       ],
+                        "file":  "tape_roll.png"
+                    },
+                    {
+                        "name":  "middle_open_drawer",
+                        "sourceRect":  [
+                                           466,
+                                           764,
+                                           444,
+                                           190
+                                       ],
+                        "file":  "middle_open_drawer.png"
+                    },
+                    {
+                        "name":  "rubber_stamp",
+                        "sourceRect":  [
+                                           512,
+                                           778,
+                                           72,
+                                           77
+                                       ],
+                        "file":  "rubber_stamp.png"
+                    },
+                    {
+                        "name":  "red_stamp_pad",
+                        "sourceRect":  [
+                                           589,
+                                           772,
+                                           89,
+                                           87
+                                       ],
+                        "file":  "red_stamp_pad.png"
+                    },
+                    {
+                        "name":  "numbering_machine",
+                        "sourceRect":  [
+                                           676,
+                                           779,
+                                           75,
+                                           82
+                                       ],
+                        "file":  "numbering_machine.png"
+                    },
+                    {
+                        "name":  "label_printer",
+                        "sourceRect":  [
+                                           756,
+                                           779,
+                                           105,
+                                           82
+                                       ],
+                        "file":  "label_printer.png"
+                    },
+                    {
+                        "name":  "etiketler_card",
+                        "sourceRect":  [
+                                           505,
+                                           867,
+                                           94,
+                                           66
+                                       ],
+                        "file":  "etiketler_card.png"
+                    },
+                    {
+                        "name":  "usb_hdd_etiketleri_card",
+                        "sourceRect":  [
+                                           608,
+                                           867,
+                                           86,
+                                           67
+                                       ],
+                        "file":  "usb_hdd_etiketleri_card.png"
+                    },
+                    {
+                        "name":  "kaseler_card",
+                        "sourceRect":  [
+                                           702,
+                                           868,
+                                           91,
+                                           65
+                                       ],
+                        "file":  "kaseler_card.png"
+                    },
+                    {
+                        "name":  "zimba_teli_klips_card",
+                        "sourceRect":  [
+                                           790,
+                                           868,
+                                           111,
+                                           65
+                                       ],
+                        "file":  "zimba_teli_klips_card.png"
+                    },
+                    {
+                        "name":  "right_open_drawer",
+                        "sourceRect":  [
+                                           951,
+                                           740,
+                                           397,
+                                           231
+                                       ],
+                        "file":  "right_open_drawer.png"
+                    },
+                    {
+                        "name":  "black_cable_coil",
+                        "sourceRect":  [
+                                           970,
+                                           780,
+                                           101,
+                                           94
+                                       ],
+                        "file":  "black_cable_coil.png"
+                    },
+                    {
+                        "name":  "dark_cable_coil",
+                        "sourceRect":  [
+                                           1076,
+                                           781,
+                                           115,
+                                           87
+                                       ],
+                        "file":  "dark_cable_coil.png"
+                    },
+                    {
+                        "name":  "white_cable_coil",
+                        "sourceRect":  [
+                                           1150,
+                                           774,
+                                           109,
+                                           92
+                                       ],
+                        "file":  "white_cable_coil.png"
+                    },
+                    {
+                        "name":  "usb_drives",
+                        "sourceRect":  [
+                                           995,
+                                           867,
+                                           138,
+                                           62
+                                       ],
+                        "file":  "usb_drives.png"
+                    },
+                    {
+                        "name":  "black_accessory_pouch",
+                        "sourceRect":  [
+                                           1123,
+                                           868,
+                                           122,
+                                           63
+                                       ],
+                        "file":  "black_accessory_pouch.png"
+                    },
+                    {
+                        "name":  "zip_ties",
+                        "sourceRect":  [
+                                           1265,
+                                           802,
+                                           63,
+                                           142
+                                       ],
+                        "file":  "zip_ties.png"
+                    },
+                    {
+                        "name":  "right_cabinet_drawers",
+                        "sourceRect":  [
+                                           1345,
+                                           650,
+                                           169,
+                                           220
+                                       ],
+                        "file":  "right_cabinet_drawers.png"
+                    },
+                    {
+                        "name":  "trash_bin",
+                        "sourceRect":  [
+                                           1384,
+                                           754,
+                                           145,
+                                           263
+                                       ],
+                        "file":  "trash_bin.png"
+                    },
+                    {
+                        "name":  "desk_work_mat_clean",
+                        "sourceRect":  null,
+                        "file":  "desk_work_mat_clean.png",
+                        "note":  "Clean redraw of the desk work mat without placed objects."
+                    },
+                    {
+                        "name":  "cork_board_clean",
+                        "sourceRect":  null,
+                        "file":  "cork_board_clean.png",
+                        "note":  "Clean redraw of the cork board without pinned notes."
+                    }
+                ],
+    "emptyWorkspace":  {
+                           "file":  "empty_workspace_scene.png",
+                           "size":  [
+                                        1536,
+                                        1024
+                                    ],
+                           "description":  "Empty workspace scene with matching camera angle, lighting, desk, drawers, wall, cork board, window, and room structure."
+                       }
+}
