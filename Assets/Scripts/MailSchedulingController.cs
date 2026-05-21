@@ -330,15 +330,11 @@ public sealed class MailSchedulingController : MonoBehaviour
         for (int i = 0; i < inboxItemImages.Count; i++)
         {
             bool isSelected = i == selectedMailIndex;
-            bool isScheduled = hourByMailIndex.TryGetValue(i, out string hour);
-
             inboxItemImages[i].color = isSelected
                 ? new Color(0.82f, 0.9f, 0.97f, 1f)
                 : Color.white;
 
-            inboxItemLabels[i].text = isScheduled
-                ? $"{MailTasks[i].InboxTitle}\n{hour}"
-                : MailTasks[i].InboxTitle;
+            inboxItemLabels[i].text = MailTasks[i].InboxTitle;
         }
     }
 
