@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public sealed class Game1ClickableAreaInstaller : MonoBehaviour
 {
     private const string RootName = "_ClickableDeskObjects";
+    private const string SceneObjectsRootName = "Objects";
     private const string BackgroundObjectName = "ChatGPT Image 20 May 2026 04_44_35_0";
     private const float SourceWidth = 1536f;
     private const float SourceHeight = 1024f;
@@ -65,6 +66,13 @@ public sealed class Game1ClickableAreaInstaller : MonoBehaviour
             return;
         }
 
+        EnsurePhysicsRaycaster();
+
+        if (TryInstallSceneSpriteObjects())
+        {
+            return;
+        }
+
         SpriteRenderer background = FindBackgroundRenderer();
         if (background == null)
         {
@@ -72,11 +80,45 @@ public sealed class Game1ClickableAreaInstaller : MonoBehaviour
             return;
         }
 
-        EnsurePhysicsRaycaster();
-
         GameObject root = new GameObject(RootName);
         Game1ClickableAreaInstaller installer = root.AddComponent<Game1ClickableAreaInstaller>();
         installer.CreateAreas(background);
+    }
+
+    private static bool TryInstallSceneSpriteObjects()
+    {
+        GameObject objectsRoot = GameObject.Find(SceneObjectsRootName);
+        if (objectsRoot == null)
+        {
+            return false;
+        }
+
+        SpriteRenderer[] renderers = objectsRoot.GetComponentsInChildren<SpriteRenderer>(true);
+        if (renderers.Length == 0)
+        {
+            return false;
+        }
+
+        GameObject marker = new GameObject(RootName);
+        marker.transform.SetParent(objectsRoot.transform, false);
+
+        foreach (SpriteRenderer renderer in renderers)
+        {
+            GameObject objectGameObject = renderer.gameObject;
+
+            if (objectGameObject.GetComponent<ClickableDeskObject>() == null)
+            {
+                ClickableDeskObject clickable = objectGameObject.AddComponent<ClickableDeskObject>();
+                clickable.Initialize(CreateObjectId(objectGameObject.name), objectGameObject.name);
+            }
+        }
+
+        return true;
+    }
+
+    private static string CreateObjectId(string objectName)
+    {
+        return string.IsNullOrWhiteSpace(objectName) ? "DeskObject" : objectName.Replace(" ", string.Empty);
     }
 
     private static SpriteRenderer FindBackgroundRenderer()
