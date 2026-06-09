@@ -121,26 +121,44 @@ public sealed class BreakManager : MonoBehaviour
 
     private void EnsureUi()
     {
-        if (breakButton != null && breakPanelRoot != null && returnButton != null)
+        if (breakButton != null)
         {
             breakButton.onClick.RemoveListener(StartBreak);
             breakButton.onClick.AddListener(StartBreak);
+            if (breakButtonLabel == null)
+            {
+                breakButtonLabel = breakButton.GetComponentInChildren<TextMeshProUGUI>(true);
+            }
+        }
+
+        if (breakPanelRoot != null && returnButton != null)
+        {
             returnButton.onClick.RemoveListener(ReturnFromBreak);
             returnButton.onClick.AddListener(ReturnFromBreak);
             return;
         }
 
-        Canvas canvas = OfficeMiniGameUi.CreateOverlayCanvas("Break Canvas", transform, 1030);
+        Canvas canvas = breakButton != null ? breakButton.GetComponentInParent<Canvas>() : null;
+        if (canvas == null)
+        {
+            canvas = OfficeMiniGameUi.CreateOverlayCanvas("Break Canvas", transform, 1030);
+        }
 
-        breakButton = OfficeMiniGameUi.CreateButton("Break Button", canvas.transform, "Molaya Çık", new Vector2(190f, 54f), new Color(0.18f, 0.4f, 0.42f, 1f), StartBreak);
-        RectTransform breakButtonRect = breakButton.GetComponent<RectTransform>();
-        breakButtonRect.anchorMin = new Vector2(0f, 0f);
-        breakButtonRect.anchorMax = new Vector2(0f, 0f);
-        breakButtonRect.anchoredPosition = new Vector2(135f, 64f);
-        breakButtonLabel = breakButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (breakButton == null)
+        {
+            breakButton = OfficeMiniGameUi.CreateButton("Break Button", canvas.transform, "Molaya Çık", new Vector2(190f, 54f), new Color(0.18f, 0.4f, 0.42f, 1f), StartBreak);
+            RectTransform breakButtonRect = breakButton.GetComponent<RectTransform>();
+            breakButtonRect.anchorMin = new Vector2(1f, 0f);
+            breakButtonRect.anchorMax = new Vector2(1f, 0f);
+            breakButtonRect.anchoredPosition = new Vector2(-125f, 64f);
+            breakButtonLabel = breakButton.GetComponentInChildren<TextMeshProUGUI>(true);
+        }
 
-        breakPanelRoot = OfficeMiniGameUi.CreateImage("Break Panel", canvas.transform, new Color(0f, 0f, 0f, 0.62f));
-        OfficeMiniGameUi.Stretch(breakPanelRoot.GetComponent<RectTransform>(), Vector2.zero, Vector2.zero);
+        if (breakPanelRoot == null)
+        {
+            breakPanelRoot = OfficeMiniGameUi.CreateImage("Break Panel", canvas.transform, new Color(0f, 0f, 0f, 0.62f));
+            OfficeMiniGameUi.Stretch(breakPanelRoot.GetComponent<RectTransform>(), Vector2.zero, Vector2.zero);
+        }
 
         GameObject card = OfficeMiniGameUi.CreateImage("Break Card", breakPanelRoot.transform, new Color(0.94f, 0.91f, 0.82f, 0.98f));
         RectTransform cardRect = card.GetComponent<RectTransform>();
@@ -161,10 +179,18 @@ public sealed class BreakManager : MonoBehaviour
         statusRect.offsetMin = new Vector2(34f, 82f);
         statusRect.offsetMax = new Vector2(-34f, -96f);
 
-        returnButton = OfficeMiniGameUi.CreateButton("Return From Break", card.transform, "Moladan Dön", new Vector2(180f, 52f), new Color(0.25f, 0.48f, 0.34f, 1f), ReturnFromBreak);
-        RectTransform returnRect = returnButton.GetComponent<RectTransform>();
-        returnRect.anchorMin = new Vector2(0.5f, 0f);
-        returnRect.anchorMax = new Vector2(0.5f, 0f);
-        returnRect.anchoredPosition = new Vector2(0f, 48f);
+        if (returnButton == null)
+        {
+            returnButton = OfficeMiniGameUi.CreateButton("Return From Break", card.transform, "Moladan Dön", new Vector2(180f, 52f), new Color(0.25f, 0.48f, 0.34f, 1f), ReturnFromBreak);
+            RectTransform returnRect = returnButton.GetComponent<RectTransform>();
+            returnRect.anchorMin = new Vector2(0.5f, 0f);
+            returnRect.anchorMax = new Vector2(0.5f, 0f);
+            returnRect.anchoredPosition = new Vector2(0f, 48f);
+        }
+
+        breakButton.onClick.RemoveListener(StartBreak);
+        breakButton.onClick.AddListener(StartBreak);
+        returnButton.onClick.RemoveListener(ReturnFromBreak);
+        returnButton.onClick.AddListener(ReturnFromBreak);
     }
 }
