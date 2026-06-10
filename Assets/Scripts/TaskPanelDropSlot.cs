@@ -64,6 +64,12 @@ public sealed class TaskPanelDropSlot : MonoBehaviour, IDropHandler
             label = labelObject.GetComponent<TextMeshProUGUI>();
         }
 
+        RectTransform currentLabelRect = label.transform as RectTransform;
+        if (currentLabelRect != null)
+        {
+            currentLabelRect.localRotation = Quaternion.Inverse(transform.localRotation);
+        }
+
         label.text = displayText;
         label.alignment = TextAlignmentOptions.Center;
         label.fontSize = 22f;
