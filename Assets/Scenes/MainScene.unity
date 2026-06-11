@@ -1918,10 +1918,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: PLAY
+  m_text: OYNA
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
+  m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1951,7 +1951,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -2111,8 +2111,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -351, y: 358}
-  m_SizeDelta: {x: 341.6217, y: 76.0287}
+  m_AnchoredPosition: {x: -412.99, y: 363}
+  m_SizeDelta: {x: 389.5287, y: 76.0287}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &827186631
 MonoBehaviour:
@@ -2134,7 +2134,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: HOW TO PLAY
+  m_text: NASIL OYNANIR
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
@@ -2507,11 +2507,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Complete each task within the time you selected,
-
-
-    and try to be as
-    accurate as the target you set.'
+  m_text: "Se\xE7ti\u011Fin s\xFCre i\xE7inde her g\xF6revi tamamla\n\nve belirledi\u011Fin
+    do\u011Fruluk hedefine olabildi\u011Fince ula\u015Fmaya \xE7al\u0131\u015F."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
@@ -2746,8 +2743,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -351, y: -61.996}
-  m_SizeDelta: {x: 513.5124, y: 678.6124}
+  m_AnchoredPosition: {x: -340.9143, y: -61.996}
+  m_SizeDelta: {x: 533.6838, y: 678.6124}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1293708990
 MonoBehaviour:
@@ -2769,17 +2766,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Review the tasks assigned to you.
-
-
-    Use your judgment and skills to
-    match each task with the right time limit and accuracy target.
-
-
-    Then start
-    the game.
-
-'
+  m_text: "Sana atanan g\xF6revleri g\xF6zden ge\xE7ir.\n\nHer g\xF6revi do\u011Fru
+    s\xFCre s\u0131n\u0131r\u0131 ve do\u011Fruluk hedefiyle e\u015Fle\u015Ftirmek
+    i\xE7in kendi karar\u0131n\u0131 ve becerilerini kullan.\n\nArd\u0131ndan oyunu
+    ba\u015Flat."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
@@ -3149,10 +3139,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: How to Play
+  m_text: "Nas\u0131l Oynan\u0131r"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
+  m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -3176,13 +3166,13 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 37.4
-  m_fontSizeBase: 37.4
+  m_fontSize: 40
+  m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -3822,7 +3812,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 263.96, y: -214}
+  m_AnchoredPosition: {x: 263.96, y: -287.11}
   m_SizeDelta: {x: 527.9267, y: 228.3777}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1735501882
@@ -3845,7 +3835,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: GOOD LUCK !
+  m_text: "BOL \u015EANS !"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
