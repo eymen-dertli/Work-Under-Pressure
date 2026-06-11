@@ -70,6 +70,15 @@ public sealed class PersistentMusicPlayer : MonoBehaviour
         audioSource.playOnAwake = false;
         audioSource.volume = volume;
         audioSource.spatialBlend = 0f;
+        AudioManager.RegisterMusicSource(audioSource, volume);
         audioSource.Play();
+    }
+
+    private void OnDestroy()
+    {
+        if (audioSource != null)
+        {
+            AudioManager.UnregisterMusicSource(audioSource);
+        }
     }
 }

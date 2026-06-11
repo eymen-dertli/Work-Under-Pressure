@@ -6,6 +6,8 @@ public class MenuController : MonoBehaviour
 {
     private const string HtpButtonName = "HtpButton";
     private const string HowToPlayPanelName = "HowToPlayPanel";
+    private const string SettingsButtonName = "SettingsButton";
+    private const string SettingsPanelName = "SettingsPanel";
 
     public void PlayGame()
     {
@@ -15,6 +17,7 @@ public class MenuController : MonoBehaviour
     public GameObject mainMenuPanel;
     public GameObject levelsPanel;
     public GameObject howToPlayPanel;
+    public GameObject settingsPanel;
 
     private void Awake()
     {
@@ -23,9 +26,24 @@ public class MenuController : MonoBehaviour
             howToPlayPanel = GameObject.Find(HowToPlayPanelName);
         }
 
+        if (settingsPanel == null)
+        {
+            settingsPanel = GameObject.Find(SettingsPanelName);
+        }
+
         if (howToPlayPanel != null)
         {
             howToPlayPanel.SetActive(false);
+        }
+
+        if (settingsPanel != null)
+        {
+            if (settingsPanel.GetComponent<SettingsPanelController>() == null)
+            {
+                settingsPanel.AddComponent<SettingsPanelController>();
+            }
+
+            settingsPanel.SetActive(false);
         }
 
         GameObject htpButtonObject = GameObject.Find(HtpButtonName);
@@ -36,6 +54,13 @@ public class MenuController : MonoBehaviour
                 htpButton.onClick.RemoveListener(OpenHowToPlayPanel);
                 htpButton.onClick.AddListener(OpenHowToPlayPanel);
             }
+        }
+
+        GameObject settingsButtonObject = GameObject.Find(SettingsButtonName);
+        if (settingsButtonObject != null && settingsButtonObject.TryGetComponent(out Button settingsButton))
+        {
+            settingsButton.onClick.RemoveListener(OpenSettingsPanel);
+            settingsButton.onClick.AddListener(OpenSettingsPanel);
         }
     }
 
@@ -76,6 +101,22 @@ public class MenuController : MonoBehaviour
         if (mainMenuPanel != null)
         {
             mainMenuPanel.SetActive(true);
+        }
+    }
+
+    public void OpenSettingsPanel()
+    {
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(true);
+        }
+    }
+
+    public void CloseSettingsPanel()
+    {
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(false);
         }
     }
 

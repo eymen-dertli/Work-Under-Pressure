@@ -101,6 +101,7 @@ public sealed class ClickableDeskObject : MonoBehaviour, IPointerClickHandler, I
 
         lastClickFrame = Time.frameCount;
         Debug.Log($"Clicked desk object: {displayName} ({objectId})", this);
+        UiClickSoundPlayer.PlayClick();
         onClicked.Invoke(objectId);
         Clicked?.Invoke(this);
     }
