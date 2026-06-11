@@ -4,8 +4,12 @@ using UnityEngine.SceneManagement;
 public sealed class PersistentMusicPlayer : MonoBehaviour
 {
     private const string MainSceneName = "MainScene";
-    private const string MusicResourcePath = "Audio/Deadline Conveyor";
     private const string PlayerObjectName = "[Persistent Music Player]";
+    private static readonly string[] MusicResourcePaths =
+    {
+        "Audio/Ledger Pulse",
+        "Audio/Deadline Conveyor",
+    };
 
     [SerializeField, Range(0f, 1f)] private float volume = 0.65f;
 
@@ -57,10 +61,10 @@ public sealed class PersistentMusicPlayer : MonoBehaviour
 
     private void PlayMusic()
     {
-        AudioClip clip = Resources.Load<AudioClip>(MusicResourcePath);
+        AudioClip clip = LoadMusicClip();
         if (clip == null)
         {
-            Debug.LogWarning($"Music clip could not be loaded from Resources/{MusicResourcePath}.");
+            Debug.LogWarning($"Music clip could not be loaded from Resources/{string.Join(" or Resources/", MusicResourcePaths)}.");
             return;
         }
 
@@ -72,6 +76,20 @@ public sealed class PersistentMusicPlayer : MonoBehaviour
         audioSource.spatialBlend = 0f;
         AudioManager.RegisterMusicSource(audioSource, volume);
         audioSource.Play();
+    }
+
+    private static AudioClip LoadMusicClip()
+    {
+        foreach (string resourcePath in MusicResourcePaths)
+        {
+            AudioClip clip = Resources.Load<AudioClip>(resourcePath);
+            if (clip != null)
+            {
+                return clip;
+            }
+        }
+
+        return null;
     }
 
     private void OnDestroy()

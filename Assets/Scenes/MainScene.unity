@@ -627,7 +627,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Sound
+  m_text: Ses
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
@@ -1104,7 +1104,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Settings
+  m_text: Ayarlar
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
@@ -3972,7 +3972,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Music
+  m_text: "M\xFCzik"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}
   m_sharedMaterial: {fileID: 345188983179246637, guid: b0ed5833446bfa24c995dec3ffc6310c, type: 2}

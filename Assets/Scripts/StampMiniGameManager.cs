@@ -227,18 +227,47 @@ public sealed class StampMiniGameManager : MonoBehaviour
             return false;
         }
 
-        string clickedText = $"{clickedObject.ObjectId} {clickedObject.DisplayName} {clickedObject.gameObject.name}".ToLowerInvariant();
-        if (clickedText.Contains("tarih"))
-        {
-            return false;
-        }
-
         if (stampDeskObject != null && clickedObject == stampDeskObject)
         {
             return true;
         }
 
-        return clickedText.Contains("kaseler") || clickedText.Contains("stamps") || clickedText.Contains("stamp");
+        string clickedText = NormalizeDeskText($"{clickedObject.ObjectId} {clickedObject.DisplayName} {clickedObject.gameObject.name}");
+        if (clickedText.Contains("tarih") || clickedText.Contains("date"))
+        {
+            return false;
+        }
+
+        return clickedText.Contains("kase")
+            || clickedText.Contains("kaseler")
+            || clickedText.Contains("stamp")
+            || clickedText.Contains("muhur");
+    }
+
+    private static string NormalizeDeskText(string text)
+    {
+        return text.ToLowerInvariant()
+            .Replace(" ", string.Empty)
+            .Replace("_", string.Empty)
+            .Replace("-", string.Empty)
+            .Replace("ş", "s")
+            .Replace("ı", "i")
+            .Replace("ğ", "g")
+            .Replace("ü", "u")
+            .Replace("ö", "o")
+            .Replace("ç", "c")
+            .Replace("åÿ", "s")
+            .Replace("åş", "s")
+            .Replace("å", "s")
+            .Replace("ä±", "i")
+            .Replace("ä°", "i")
+            .Replace("äŸ", "g")
+            .Replace("ã¼", "u")
+            .Replace("ã¶", "o")
+            .Replace("ã§", "c")
+            .Replace("ãœ", "u")
+            .Replace("ã–", "o")
+            .Replace("ã‡", "c");
     }
 
     private void ResetGame()
