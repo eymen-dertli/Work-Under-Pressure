@@ -92,6 +92,7 @@ public sealed class ContractSigningController : MonoBehaviour
         currentPage = 1;
         mistakeCount = 0;
         panelRoot.SetActive(true);
+        signaturePad.ShowGuideForPage(currentPage);
         signaturePad.ClearSignature();
         UpdateLabels("Sag alttaki kutunun icine imza at.");
     }
@@ -108,6 +109,7 @@ public sealed class ContractSigningController : MonoBehaviour
         }
 
         currentPage++;
+        signaturePad.ShowGuideForPage(currentPage);
         UpdateLabels("Imza kabul edildi. Sonraki sayfa.");
     }
 
