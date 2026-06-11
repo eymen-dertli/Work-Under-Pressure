@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public sealed class ContractSigningController : MonoBehaviour
 {
     private const string ControllerName = "_ContractSigningController";
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.Contract;
     private const int TotalPages = 12;
 
     private Canvas canvas;
@@ -14,8 +15,11 @@ public sealed class ContractSigningController : MonoBehaviour
     private TextMeshProUGUI pageLabel;
     private TextMeshProUGUI statusLabel;
     private ContractSignaturePad signaturePad;
+    private TaskTimer taskTimer;
     private int currentPage;
     private int mistakeCount;
+    private bool taskStarted;
+    private bool taskEnded;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     private static void RegisterSceneLoadedHook()
@@ -89,11 +93,25 @@ public sealed class ContractSigningController : MonoBehaviour
 
     private void Open()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
+        if (taskStarted && !taskEnded)
+        {
+            panelRoot.SetActive(true);
+            return;
+        }
+
         currentPage = 1;
         mistakeCount = 0;
+        taskStarted = true;
+        taskEnded = false;
         panelRoot.SetActive(true);
         signaturePad.ShowGuideForPage(currentPage);
         signaturePad.ClearSignature();
+        StartTaskTimer();
         UpdateLabels("Sağ alttaki kutunun içine imza at.");
     }
 
@@ -103,8 +121,15 @@ public sealed class ContractSigningController : MonoBehaviour
 
         if (currentPage >= TotalPages)
         {
-            UpdateLabels("Tüm sözleşmeler imzalandı.");
-            panelRoot.SetActive(false);
+            int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(TotalPages, mistakeCount);
+            UpdateLabels($"Tüm sözleşmeler imzalandı.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}");
+            if (taskTimer != null)
+            {
+                taskTimer.StopTimer();
+            }
+
+            taskEnded = true;
+            TaskAssignmentSession.MarkTaskCompleted(TaskKind);
             return;
         }
 
@@ -151,6 +176,33 @@ public sealed class ContractSigningController : MonoBehaviour
         panelRoot.SetActive(false);
     }
 
+    private void StartTaskTimer()
+    {
+        if (!TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            return;
+        }
+
+        if (taskTimer == null)
+        {
+            taskTimer = gameObject.AddComponent<TaskTimer>();
+        }
+
+        taskTimer.TimerExpired -= HandleTaskTimerExpired;
+        taskTimer.TimerExpired += HandleTaskTimerExpired;
+        taskTimer.StartTimer(assignment.TimeLimitSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
+    }
+
+    private void HandleTaskTimerExpired(TaskTimer expiredTimer)
+    {
+        signaturePad.ClearSignature();
+        taskEnded = true;
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(Mathf.Max(0, currentPage - 1), mistakeCount);
+        UpdateLabels($"Süre bitti. Görev başarısız.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}");
+    }
+
     private void CreatePaperStack(Transform parent)
     {
         for (int i = 4; i >= 1; i--)
@@ -177,8 +229,8 @@ public sealed class ContractSigningController : MonoBehaviour
         RectTransform statusRect = statusLabel.GetComponent<RectTransform>();
         statusRect.anchorMin = new Vector2(0f, 0f);
         statusRect.anchorMax = new Vector2(1f, 0f);
-        statusRect.offsetMin = new Vector2(44f, 38f);
-        statusRect.offsetMax = new Vector2(-44f, 92f);
+        statusRect.offsetMin = new Vector2(44f, 28f);
+        statusRect.offsetMax = new Vector2(-44f, 132f);
 
         CreateDocumentLines(paper.transform);
         CreateSignatureArea(paper.transform);
@@ -240,7 +292,7 @@ public sealed class ContractSigningController : MonoBehaviour
         buttonRect.anchoredPosition = new Vector2(365f, 435f);
 
         Button button = buttonObject.AddComponent<Button>();
-        button.onClick.AddListener(() => panelRoot.SetActive(false));
+        button.onClick.AddListener(ClosePanel);
 
         TextMeshProUGUI label = CreateLabel("CloseLabel", buttonObject.transform, "X", 26f, Color.white);
         RectTransform labelRect = label.GetComponent<RectTransform>();
@@ -282,6 +334,11 @@ public sealed class ContractSigningController : MonoBehaviour
     {
         pageLabel.text = $"Sözleşme {currentPage}/{TotalPages}";
         statusLabel.text = mistakeCount > 0 ? $"{statusText} Hata: {mistakeCount}" : statusText;
+    }
+
+    private void ClosePanel()
+    {
+        panelRoot.SetActive(false);
     }
 
     private static void EnsureEventSystem()

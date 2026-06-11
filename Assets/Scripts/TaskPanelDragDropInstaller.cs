@@ -134,7 +134,16 @@ public sealed class TaskPanelDragDropInstaller : MonoBehaviour
 
     private static Transform FindTransform(string objectName)
     {
-        GameObject found = GameObject.Find(objectName);
-        return found != null ? found.transform : null;
+        Transform[] transforms = Resources.FindObjectsOfTypeAll<Transform>();
+        for (int i = 0; i < transforms.Length; i++)
+        {
+            Transform candidate = transforms[i];
+            if (candidate != null && candidate.name == objectName && candidate.gameObject.scene.IsValid())
+            {
+                return candidate;
+            }
+        }
+
+        return null;
     }
 }

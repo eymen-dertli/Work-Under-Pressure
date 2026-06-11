@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public sealed class StampMiniGameManager : MonoBehaviour
 {
     private const string ControllerName = "_StampMiniGameManager";
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.Stamp;
 
     private static readonly StampDefinition[] StampDefinitions =
     {
@@ -86,6 +87,8 @@ public sealed class StampMiniGameManager : MonoBehaviour
     private int correctCount;
     private int wrongCount;
     private bool awaitingNextDocument;
+    private bool taskStarted;
+    private bool taskEnded;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     private static void RegisterSceneLoadedHook()
@@ -142,11 +145,30 @@ public sealed class StampMiniGameManager : MonoBehaviour
 
     public void StartMiniGame()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
         EnsureUi();
+        if (taskStarted && !taskEnded)
+        {
+            panelRoot.SetActive(true);
+            return;
+        }
+
         ResetGame();
+        taskStarted = true;
+        taskEnded = false;
         CreateStampButtons();
         panelRoot.SetActive(true);
         resultPanel.SetActive(false);
+        if (TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            useTaskTimer = true;
+            taskDurationSeconds = assignment.TimeLimitSeconds;
+        }
+
         if (useTaskTimer)
         {
             StartTaskTimer();
@@ -156,17 +178,9 @@ public sealed class StampMiniGameManager : MonoBehaviour
 
     public void CloseMiniGame()
     {
-        StopAllCoroutines();
-        awaitingNextDocument = false;
-
         if (panelRoot != null)
         {
             panelRoot.SetActive(false);
-        }
-
-        if (taskTimer != null)
-        {
-            taskTimer.StopTimer();
         }
     }
 
@@ -180,8 +194,11 @@ public sealed class StampMiniGameManager : MonoBehaviour
             taskTimer.StopTimer();
         }
 
+        taskEnded = true;
+        TaskAssignmentSession.MarkTaskCompleted(TaskKind);
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sonuç\nDoğru: {correctCount}\nYanlış: {wrongCount}";
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(correctCount, wrongCount);
+        resultLabel.text = $"Sonuç\nDoğru: {correctCount}\nYanlış: {wrongCount}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
         RefreshHud("Kaşe görevi tamamlandı.");
     }
 
@@ -195,6 +212,7 @@ public sealed class StampMiniGameManager : MonoBehaviour
         taskTimer.TimerExpired -= HandleTaskTimerExpired;
         taskTimer.TimerExpired += HandleTaskTimerExpired;
         taskTimer.StartTimer(taskDurationSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
     }
 
     private void HandleTaskTimerExpired(TaskTimer expiredTimer)
@@ -207,8 +225,11 @@ public sealed class StampMiniGameManager : MonoBehaviour
 
         StopAllCoroutines();
         awaitingNextDocument = false;
+        taskEnded = true;
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
         resultPanel.SetActive(true);
-        resultLabel.text = $"Süre Bitti\nDoğru: {correctCount}\nYanlış: {wrongCount}\nGörev başarısız.";
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(correctCount, wrongCount);
+        resultLabel.text = $"Süre Bitti\nDoğru: {correctCount}\nYanlış: {wrongCount}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}\nGörev başarısız.";
         RefreshHud("Süre bitti. Görev başarısız.");
     }
 

@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public sealed class MailSchedulingController : MonoBehaviour
 {
     private const string ControllerName = "_MailSchedulingController";
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.Mail;
 
     private static readonly MailTask[] MailTasks =
     {
@@ -40,7 +41,10 @@ public sealed class MailSchedulingController : MonoBehaviour
     private TextMeshProUGUI mailBodyLabel;
     private TextMeshProUGUI statusLabel;
     private TextMeshProUGUI progressLabel;
+    private TaskTimer taskTimer;
     private int selectedMailIndex;
+    private int wrongAttemptCount;
+    private bool taskStarted;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     private static void RegisterSceneLoadedHook()
@@ -98,10 +102,25 @@ public sealed class MailSchedulingController : MonoBehaviour
 
     private void Open()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
+        if (taskStarted)
+        {
+            panelRoot.SetActive(true);
+            SelectMail(selectedMailIndex);
+            return;
+        }
+
         selectedMailIndex = 0;
+        wrongAttemptCount = 0;
+        taskStarted = true;
         hourByMailIndex.Clear();
         mailIndexByHour.Clear();
         panelRoot.SetActive(true);
+        StartTaskTimer();
         SelectMail(0, "Sol listeden bir mail seç veya bu mail için saat belirle.");
     }
 
@@ -112,7 +131,15 @@ public sealed class MailSchedulingController : MonoBehaviour
 
         mailTitleLabel.text = mailTask.Title;
         mailBodyLabel.text = $"{mailTask.Body}\n\nSüre: 1 saat";
-        statusLabel.text = string.IsNullOrEmpty(statusText) ? "Bu mail için uygun bir saat seç." : statusText;
+        if (hourByMailIndex.Count == MailTasks.Length)
+        {
+            int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(MailTasks.Length, wrongAttemptCount);
+            statusLabel.text = $"Tüm mailler çakışma olmadan planlandı.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
+        }
+        else
+        {
+            statusLabel.text = string.IsNullOrEmpty(statusText) ? "Bu mail için uygun bir saat seç." : statusText;
+        }
 
         UpdateInboxVisuals();
         UpdateProgressLabel();
@@ -123,6 +150,7 @@ public sealed class MailSchedulingController : MonoBehaviour
     {
         if (mailIndexByHour.TryGetValue(hour, out int existingMailIndex) && existingMailIndex != selectedMailIndex)
         {
+            wrongAttemptCount++;
             SelectMail(selectedMailIndex, $"{hour} zaten '{MailTasks[existingMailIndex].InboxTitle}' için seçildi. Farklı saat seç.");
             return;
         }
@@ -139,7 +167,44 @@ public sealed class MailSchedulingController : MonoBehaviour
             ? "Tüm mailler çakışma olmadan planlandı."
             : $"{hour} kaydedildi. Soldan sıradaki maili seç.";
 
+        if (hourByMailIndex.Count == MailTasks.Length)
+        {
+            if (taskTimer != null)
+            {
+                taskTimer.StopTimer();
+            }
+
+            TaskAssignmentSession.MarkTaskCompleted(TaskKind);
+            int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(MailTasks.Length, wrongAttemptCount);
+            nextStatus = $"{nextStatus}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
+        }
+
         SelectMail(selectedMailIndex, nextStatus);
+    }
+
+    private void StartTaskTimer()
+    {
+        if (!TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            return;
+        }
+
+        if (taskTimer == null)
+        {
+            taskTimer = gameObject.AddComponent<TaskTimer>();
+        }
+
+        taskTimer.TimerExpired -= HandleTaskTimerExpired;
+        taskTimer.TimerExpired += HandleTaskTimerExpired;
+        taskTimer.StartTimer(assignment.TimeLimitSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
+    }
+
+    private void HandleTaskTimerExpired(TaskTimer expiredTimer)
+    {
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(hourByMailIndex.Count, wrongAttemptCount);
+        statusLabel.text = $"Süre bitti. Görev başarısız.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
     }
 
     private void BuildUi()

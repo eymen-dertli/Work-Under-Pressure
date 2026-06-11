@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public sealed class TrashMiniGameManager : MonoBehaviour
 {
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.Trash;
+
     [Header("Trigger")]
     [SerializeField] private bool listenToClickableDeskObjects = true;
     [SerializeField] private ClickableDeskObject trashObject;
@@ -62,11 +64,21 @@ public sealed class TrashMiniGameManager : MonoBehaviour
 
     public void StartMiniGame()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
         EnsureUi();
         ResetGame();
         SpawnPapers();
         panelRoot.SetActive(true);
         resultPanel.SetActive(false);
+        if (TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            taskDurationSeconds = assignment.TimeLimitSeconds;
+        }
+
         StartTaskTimer();
         RefreshHud("Yeşil kelime içeren kağıtları çöpe fırlat.");
     }
@@ -92,8 +104,10 @@ public sealed class TrashMiniGameManager : MonoBehaviour
             taskTimer.StopTimer();
         }
 
+        TaskAssignmentSession.MarkTaskCompleted(TaskKind);
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sonuç\nPuan: {score}\nHata: {mistakes}";
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(correctPapersThrown, mistakes);
+        resultLabel.text = $"Sonuç\nPuan: {score}\nHata: {mistakes}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
         statusLabel.text = "Mini oyun tamamlandı.";
     }
 
@@ -107,6 +121,7 @@ public sealed class TrashMiniGameManager : MonoBehaviour
         taskTimer.TimerExpired -= HandleTaskTimerExpired;
         taskTimer.TimerExpired += HandleTaskTimerExpired;
         taskTimer.StartTimer(taskDurationSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
     }
 
     private void HandleTaskTimerExpired(TaskTimer expiredTimer)
@@ -118,8 +133,10 @@ public sealed class TrashMiniGameManager : MonoBehaviour
         }
 
         EnsureUi();
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
         resultPanel.SetActive(true);
-        resultLabel.text = $"Süre Bitti\nPuan: {score}\nHata: {mistakes}\nGörev başarısız.";
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(correctPapersThrown, mistakes);
+        resultLabel.text = $"Süre Bitti\nPuan: {score}\nHata: {mistakes}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}\nGörev başarısız.";
         RefreshHud("Süre bitti. Görev başarısız.");
     }
 

@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public sealed class FilingCabinetMiniGameController : MonoBehaviour
 {
     private const string ControllerName = "_FilingCabinetMiniGameController";
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.Filing;
     private static readonly CultureInfo TurkishCulture = new CultureInfo("tr-TR");
 
     private static readonly string[] FolderNames =
@@ -55,11 +56,14 @@ public sealed class FilingCabinetMiniGameController : MonoBehaviour
     private TextMeshProUGUI resultLabel;
     private TextMeshProUGUI resultStatsLabel;
     private GameObject resultPanel;
+    private TaskTimer taskTimer;
     private readonly List<FileTask> taskOrder = new List<FileTask>();
 
     private int currentTaskIndex;
     private int correctCount;
     private int mistakeCount;
+    private bool taskStarted;
+    private bool taskEnded;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
     private static void RegisterSceneLoadedHook()
@@ -133,12 +137,26 @@ public sealed class FilingCabinetMiniGameController : MonoBehaviour
 
     private void Open()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
+        if (taskStarted && !taskEnded)
+        {
+            panelRoot.SetActive(true);
+            return;
+        }
+
         ShuffleTasks();
         currentTaskIndex = 0;
         correctCount = 0;
         mistakeCount = 0;
+        taskStarted = true;
+        taskEnded = false;
         panelRoot.SetActive(true);
         resultPanel.SetActive(false);
+        StartTaskTimer();
         ShowCurrentFile("Belgeyi oku ve doğru müşteri dosyasını seç.");
     }
 
@@ -197,12 +215,49 @@ public sealed class FilingCabinetMiniGameController : MonoBehaviour
 
     private void ShowResult()
     {
+        TaskAssignmentSession.MarkTaskCompleted(TaskKind);
         resultPanel.SetActive(true);
         int attempts = correctCount + mistakeCount;
         int accuracy = attempts > 0 ? Mathf.RoundToInt(correctCount / (float)attempts * 100f) : 0;
         resultLabel.text = "Dosyalama Tamamlandı";
-        resultStatsLabel.text = $"Doğru: {correctCount}\nYanlış: {mistakeCount}\nDoğruluk: %{accuracy}";
+        resultStatsLabel.text = $"Doğru: {correctCount}\nYanlış: {mistakeCount}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
         RefreshHud("Tüm belgeler dosyalandı.");
+
+        if (taskTimer != null)
+        {
+            taskTimer.StopTimer();
+        }
+
+        taskEnded = true;
+    }
+
+    private void StartTaskTimer()
+    {
+        if (!TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            return;
+        }
+
+        if (taskTimer == null)
+        {
+            taskTimer = gameObject.AddComponent<TaskTimer>();
+        }
+
+        taskTimer.TimerExpired -= HandleTaskTimerExpired;
+        taskTimer.TimerExpired += HandleTaskTimerExpired;
+        taskTimer.StartTimer(assignment.TimeLimitSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
+    }
+
+    private void HandleTaskTimerExpired(TaskTimer expiredTimer)
+    {
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
+        resultPanel.SetActive(true);
+        taskEnded = true;
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(correctCount, mistakeCount);
+        resultLabel.text = "Süre Bitti";
+        resultStatsLabel.text = $"Doğru: {correctCount}\nYanlış: {mistakeCount}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
+        RefreshHud("Süre bitti. Görev başarısız.");
     }
 
     private void ShuffleTasks()
@@ -332,7 +387,7 @@ public sealed class FilingCabinetMiniGameController : MonoBehaviour
     {
         resultPanel = OfficeMiniGameUi.CreateImage("Filing Result Panel", parent, new Color(0.96f, 0.93f, 0.84f, 0.98f));
         RectTransform resultRect = resultPanel.GetComponent<RectTransform>();
-        resultRect.sizeDelta = new Vector2(430f, 240f);
+        resultRect.sizeDelta = new Vector2(460f, 280f);
         resultRect.anchoredPosition = Vector2.zero;
 
         resultLabel = OfficeMiniGameUi.CreateLabel("ResultLabel", resultPanel.transform, string.Empty, 28f, new Color(0.12f, 0.1f, 0.08f, 1f));
@@ -346,15 +401,15 @@ public sealed class FilingCabinetMiniGameController : MonoBehaviour
         RectTransform statsRect = resultStatsLabel.GetComponent<RectTransform>();
         statsRect.anchorMin = new Vector2(1f, 0f);
         statsRect.anchorMax = new Vector2(1f, 0f);
-        statsRect.sizeDelta = new Vector2(175f, 76f);
-        statsRect.anchoredPosition = new Vector2(-104f, 48f);
+        statsRect.sizeDelta = new Vector2(220f, 128f);
+        statsRect.anchoredPosition = new Vector2(-124f, 72f);
         resultStatsLabel.alignment = TextAlignmentOptions.Right;
 
         Button closeResult = OfficeMiniGameUi.CreateButton("Close Result", resultPanel.transform, "KAPAT", new Vector2(150f, 50f), new Color(0.16f, 0.16f, 0.18f, 1f), Close);
         RectTransform closeRect = closeResult.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(0f, 0f);
         closeRect.anchorMax = new Vector2(0f, 0f);
-        closeRect.anchoredPosition = new Vector2(98f, 42f);
+        closeRect.anchoredPosition = new Vector2(104f, 48f);
     }
 
     private void CreateCloseButton(Transform parent)

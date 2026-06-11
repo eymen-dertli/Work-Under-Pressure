@@ -27,6 +27,7 @@ public class CallData
 public sealed class PhoneCallTaskManager : MonoBehaviour
 {
     private const string ControllerName = "_PhoneCallTaskManager";
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.Phone;
 
     [Header("Arama Verileri")]
     [SerializeField] private List<CallData> aramalar = new List<CallData>();
@@ -52,6 +53,7 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
     [SerializeField] private GameObject telefonPaneli;
     [SerializeField] private GameObject notDefteriPaneli;
     [SerializeField] private Button acButonu;
+    [SerializeField] private Button tekrarDinleButonu;
     [SerializeField] private Button kontrolEtButonu;
     [SerializeField] private TMP_InputField isimSoyisimInput;
     [SerializeField] private TMP_InputField departmanInput;
@@ -61,6 +63,7 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
     [Header("Mesajlar")]
     [SerializeField] private string gelenAramaMesaji = "Telefon caliyor...";
     [SerializeField] private string konusmaBasladiMesaji = "Gorusme basladi. Bilgileri not al.";
+    [SerializeField] private string tekrarDinleMesaji = "Gorusme tekrar oynatiliyor.";
     [SerializeField] private string basariliMesaj = "Gorev basarili.";
     [SerializeField] private string cevapBekleniyorMesaji = "Once telefonu acmalisin.";
 
@@ -69,8 +72,12 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
     private Coroutine activeConversationCoroutine;
     private CallData aktifArama;
     private AudioClip[] phoneAudioClips = Array.Empty<AudioClip>();
+    private AudioClip generatedRingClip;
+    private TaskTimer taskTimer;
     private int siradakiAramaIndex;
     private int siradakiZilIndex;
+    private int dogruAramaSayisi;
+    private int yanlisAramaSayisi;
     private bool telefonCaliyor;
     private bool aramaCevaplandi;
     private bool aramaAktif;
@@ -80,6 +87,8 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
     {
         UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
         UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
+        ClickableDeskObject.Clicked -= HandleDeskObjectClicked;
+        ClickableDeskObject.Clicked += HandleDeskObjectClicked;
     }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -126,21 +135,72 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
         BindButtons();
         SetUiVisible(false);
         SetInputsInteractable(false);
+        SetReplayInteractable(false);
     }
 
     private void OnEnable()
     {
-        if (oyunBaslayincaOtomatikBaslat)
+        ClickableDeskObject.Clicked -= HandleDeskObjectClicked;
+        ClickableDeskObject.Clicked += HandleDeskObjectClicked;
+        TaskAssignmentSession.AssignmentsChanged -= HandleTaskAssignmentsChanged;
+        TaskAssignmentSession.AssignmentsChanged += HandleTaskAssignmentsChanged;
+
+        if (oyunBaslayincaOtomatikBaslat && TaskAssignmentSession.HasAssignments)
         {
-            StartCallLoop();
+            StartConfiguredPhoneTask();
         }
     }
 
     private void OnDisable()
     {
+        TaskAssignmentSession.AssignmentsChanged -= HandleTaskAssignmentsChanged;
         StopCallLoop();
         StopCurrentCall();
         UnbindButtons();
+    }
+
+    private void HandleTaskAssignmentsChanged()
+    {
+        if (oyunBaslayincaOtomatikBaslat)
+        {
+            StartConfiguredPhoneTask(false);
+        }
+    }
+
+    private static void HandleDeskObjectClicked(ClickableDeskObject clickedObject)
+    {
+        if (!OfficeMiniGameUi.MatchesClickedObject(clickedObject, null, "telefon", "phone"))
+        {
+            return;
+        }
+
+        PhoneCallTaskManager manager = FindAnyObjectByType<PhoneCallTaskManager>();
+        if (manager != null)
+        {
+            manager.StartConfiguredPhoneTask(true);
+        }
+    }
+
+    private void StartConfiguredPhoneTask(bool startImmediately = false)
+    {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            StopCallLoop();
+            StopCurrentCall();
+            return;
+        }
+
+        dogruAramaSayisi = 0;
+        yanlisAramaSayisi = 0;
+        StartTaskTimer();
+        if (startImmediately)
+        {
+            StartNextCallNow();
+        }
+        else
+        {
+            StartCallLoop();
+        }
     }
 
     public void StartCallLoop()
@@ -196,7 +256,37 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
         if (aktifArama.konusmaKaydi == null)
         {
             SetResult("Bu arama icin konusma kaydi atanmamis.");
+            SetReplayInteractable(false);
             return;
+        }
+
+        PlayConversationAudio(konusmaBasladiMesaji);
+    }
+
+    public void ReplayCallAudio()
+    {
+        if (!aramaCevaplandi || aktifArama == null)
+        {
+            SetResult(cevapBekleniyorMesaji);
+            return;
+        }
+
+        if (aktifArama.konusmaKaydi == null)
+        {
+            SetResult("Bu arama icin konusma kaydi atanmamis.");
+            SetReplayInteractable(false);
+            return;
+        }
+
+        PlayConversationAudio(tekrarDinleMesaji);
+    }
+
+    private void PlayConversationAudio(string statusMessage)
+    {
+        if (activeConversationCoroutine != null)
+        {
+            StopCoroutine(activeConversationCoroutine);
+            activeConversationCoroutine = null;
         }
 
         konusmaAudioSource.Stop();
@@ -204,11 +294,8 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
         konusmaAudioSource.loop = false;
         konusmaAudioSource.Play();
 
-        if (activeConversationCoroutine != null)
-        {
-            StopCoroutine(activeConversationCoroutine);
-        }
-
+        SetReplayInteractable(true);
+        SetResult(statusMessage);
         activeConversationCoroutine = StartCoroutine(WaitForConversationEnd());
     }
 
@@ -239,11 +326,43 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
 
         if (wrongFields.Count == 0)
         {
+            dogruAramaSayisi++;
             CompleteCurrentCall(true, basariliMesaj);
             return;
         }
 
+        yanlisAramaSayisi++;
         SetResult("Yanlis alanlar: " + string.Join(", ", wrongFields));
+    }
+
+    private void StartTaskTimer()
+    {
+        if (!TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            return;
+        }
+
+        if (taskTimer == null)
+        {
+            taskTimer = gameObject.AddComponent<TaskTimer>();
+        }
+
+        taskTimer.TimerExpired -= HandleTaskTimerExpired;
+        taskTimer.TimerExpired += HandleTaskTimerExpired;
+        taskTimer.StartTimer(assignment.TimeLimitSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
+    }
+
+    private void HandleTaskTimerExpired(TaskTimer expiredTimer)
+    {
+        StopCallLoop();
+        StopCurrentCall();
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(dogruAramaSayisi, yanlisAramaSayisi);
+        SetUiVisible(true);
+        SetInputsInteractable(false);
+        SetReplayInteractable(false);
+        SetResult($"Süre bitti.\nDoğru arama: {dogruAramaSayisi}\nYanlış deneme: {yanlisAramaSayisi}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}");
     }
 
     [ContextMenu("Varsayilan arama cevaplarini yukle")]
@@ -292,6 +411,7 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
         ClearInputs();
         SetUiVisible(true);
         SetInputsInteractable(false);
+        SetReplayInteractable(false);
         SetResult(gelenAramaMesaji);
         StartRing();
 
@@ -326,6 +446,7 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
 
         if (!aramaCevaplandi && telefonCaliyor)
         {
+            yanlisAramaSayisi++;
             CompleteCurrentCall(false, "Arama cevaplanmadi.");
         }
     }
@@ -396,7 +517,7 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
         AudioClip selectedRing = SelectRingClip();
         if (selectedRing == null)
         {
-            return;
+            selectedRing = GetGeneratedRingClip();
         }
 
         zilAudioSource.Stop();
@@ -420,6 +541,30 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
         }
 
         return zilSesi;
+    }
+
+    private AudioClip GetGeneratedRingClip()
+    {
+        if (generatedRingClip != null)
+        {
+            return generatedRingClip;
+        }
+
+        const int sampleRate = 44100;
+        const float duration = 0.8f;
+        int sampleCount = Mathf.RoundToInt(sampleRate * duration);
+        float[] samples = new float[sampleCount];
+
+        for (int i = 0; i < sampleCount; i++)
+        {
+            float t = i / (float)sampleRate;
+            bool activePulse = t < 0.32f || (t > 0.42f && t < 0.68f);
+            samples[i] = activePulse ? Mathf.Sin(2f * Mathf.PI * 880f * t) * 0.22f : 0f;
+        }
+
+        generatedRingClip = AudioClip.Create("Generated Phone Ring", sampleCount, 1, sampleRate, false);
+        generatedRingClip.SetData(samples, 0);
+        return generatedRingClip;
     }
 
     private void StopRing()
@@ -461,7 +606,7 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
 
         if ((zilSesi == null && (zilSesleri == null || zilSesleri.Count == 0)) && phoneAudioClips.Length > 0)
         {
-            AudioClip ringClip = FindPhoneClip("telefon", "zil", "ring");
+            AudioClip ringClip = FindPhoneClip("telefon sesi", "telefon", "zil", "ring");
             if (ringClip != null)
             {
                 zilSesi = ringClip;
@@ -562,6 +707,12 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
             kontrolEtButonu.onClick.RemoveListener(CheckAnswers);
             kontrolEtButonu.onClick.AddListener(CheckAnswers);
         }
+
+        if (tekrarDinleButonu != null)
+        {
+            tekrarDinleButonu.onClick.RemoveListener(ReplayCallAudio);
+            tekrarDinleButonu.onClick.AddListener(ReplayCallAudio);
+        }
     }
 
     private void UnbindButtons()
@@ -574,6 +725,11 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
         if (kontrolEtButonu != null)
         {
             kontrolEtButonu.onClick.RemoveListener(CheckAnswers);
+        }
+
+        if (tekrarDinleButonu != null)
+        {
+            tekrarDinleButonu.onClick.RemoveListener(ReplayCallAudio);
         }
     }
 
@@ -610,6 +766,14 @@ public sealed class PhoneCallTaskManager : MonoBehaviour
         if (kontrolEtButonu != null)
         {
             kontrolEtButonu.interactable = isInteractable;
+        }
+    }
+
+    private void SetReplayInteractable(bool isInteractable)
+    {
+        if (tekrarDinleButonu != null)
+        {
+            tekrarDinleButonu.interactable = isInteractable;
         }
     }
 

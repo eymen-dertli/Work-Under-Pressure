@@ -25,6 +25,14 @@ public sealed class TaskPanelDropSlot : MonoBehaviour, IDropHandler
         EnsureText(string.Empty);
     }
 
+    public void ClearValue()
+    {
+        NumericValue = 0;
+        DisplayText = string.Empty;
+        HasValue = false;
+        EnsureText(string.Empty);
+    }
+
     public void OnDrop(PointerEventData eventData)
     {
         TaskPanelDragItem draggedItem = eventData.pointerDrag != null
@@ -39,7 +47,7 @@ public sealed class TaskPanelDropSlot : MonoBehaviour, IDropHandler
         SetValue(draggedItem.NumericValue, draggedItem.DisplayText);
     }
 
-    private void SetValue(int numericValue, string displayText)
+    public void SetValue(int numericValue, string displayText)
     {
         NumericValue = numericValue;
         DisplayText = displayText;

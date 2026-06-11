@@ -13,23 +13,29 @@ public sealed class TaskNotesGuideController : MonoBehaviour
     private static readonly GuideEntry[] GuideEntries =
     {
         new GuideEntry(
-            "Kaşe",
-            "Belge metnindeki kişi veya şirket ipucunu bul.\n\nSağ taraftaki kaşelerden metne ait olanı seç. Seçtiğin kaşe belgeye basılır."),
+            "Evrakları Ayırma",
+            "Gelen evrakı oku ve işin aciliyetini belirle.\n\nMetindeki tarih, teslimat, onay ve bekleme ipuçlarına göre evrakı doğru rafa ayır."),
         new GuideEntry(
-            "Dosyalık",
-            "Belgeyi oku ve hangi iş türüne ait olduğunu anla.\n\nMobilya, kırtasiye, sigorta veya ajans ipucuna göre doğru müşteri dosyasını seç."),
+            "Mailleri Cevaplama",
+            "Gelen mailleri tek tek incele.\n\nHer mail için uygun saat seç ve aynı saate iki farklı mail yerleştirmemeye dikkat et."),
         new GuideEntry(
-            "Takvim",
-            "Planlama notundaki gün ve saat bilgisini dikkatlice oku.\n\nTakvimden doğru günü, alttan doğru saati seçip PLANLA butonuna bas."),
+            "Belgeleri Kaşeleme",
+            "Belge metnindeki kişi, kurum veya şirket ipucunu bul.\n\nSağ taraftaki kaşelerden belgeye ait olanı seç. Seçtiğin kaşe belgeye basılır."),
         new GuideEntry(
-            "Sözleşme",
+            "Müşteri Dosyalarını Sıralama",
+            "Müşteri dosyalarını alfabetik sıraya koy.\n\nSeçili dosyayı yukarı veya aşağı taşı ve liste doğru sıraya geldiğinde tamamla."),
+        new GuideEntry(
+            "Telefon Cevaplayıp Not Alma",
+            "Telefonu aç, konuşmayı dinle ve istenen bilgileri not al.\n\nİsim, departman ve telefon numarasını doğru alanlara yaz. Gerekirse tekrar dinle."),
+        new GuideEntry(
+            "Dosya Tamamlama",
+            "Belgeyi oku ve hangi iş türüne ait olduğunu anla.\n\nMobilya, kırtasiye, sigorta veya ajans ipuçlarına göre belgeyi doğru dosyaya ekle."),
+        new GuideEntry(
+            "Takvim Düzenleme",
+            "Planlama notundaki gün ve saat bilgisini dikkatlice oku.\n\nTakvimden doğru günü ve doğru saati seçip planı ekle."),
+        new GuideEntry(
+            "Sözleşme İmzalama",
             "İmza kutusundaki soluk rehberi takip et.\n\nÇizgin rehbere yeterince yakın olursa imza kabul edilir."),
-        new GuideEntry(
-            "Telefon",
-            "Aramadaki isim, numara ve departman bilgisini ayıkla.\n\nEski veya yanıltıcı bilgi geçerse son verilen doğru bilgiyi kullan."),
-        new GuideEntry(
-            "Yazıcı",
-            "Yazıcıdan gelen belgeyi kontrol et.\n\nEksik sayfa, yanlış baskı veya ilgili dosya bilgisini metindeki ipuçlarına göre belirle."),
     };
 
     private GameObject panelRoot;

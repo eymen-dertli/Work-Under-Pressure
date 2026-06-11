@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public sealed class PrinterSortingMiniGameManager : MonoBehaviour
 {
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.Printer;
+
     [Header("Trigger")]
     [SerializeField] private bool listenToClickableDeskObjects = true;
     [SerializeField] private ClickableDeskObject printerObject;
@@ -66,6 +68,11 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
 
     public void StartMiniGame()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
         EnsureUi();
         EnsureCompanyList();
         ResetGame();
@@ -73,6 +80,11 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
         SpawnPrintedPapers();
         panelRoot.SetActive(true);
         resultPanel.SetActive(false);
+        if (TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            taskDurationSeconds = assignment.TimeLimitSeconds;
+        }
+
         StartTaskTimer();
         RefreshHud("Yazıcıdan çıkan kağıtları doğru şirket dosyasına bırak.");
     }
@@ -97,8 +109,10 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
             taskTimer.StopTimer();
         }
 
+        TaskAssignmentSession.MarkTaskCompleted(TaskKind);
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sonuç\nPuan: {score}\nHata: {mistakes}";
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(sortedCount, mistakes);
+        resultLabel.text = $"Sonuç\nPuan: {score}\nHata: {mistakes}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
         RefreshHud("Şirket dosyalama görevi tamamlandı.");
     }
 
@@ -112,6 +126,7 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
         taskTimer.TimerExpired -= HandleTaskTimerExpired;
         taskTimer.TimerExpired += HandleTaskTimerExpired;
         taskTimer.StartTimer(taskDurationSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
     }
 
     private void HandleTaskTimerExpired(TaskTimer expiredTimer)
@@ -122,8 +137,10 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
             return;
         }
 
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
         resultPanel.SetActive(true);
-        resultLabel.text = $"Süre Bitti\nPuan: {score}\nHata: {mistakes}\nGörev başarısız.";
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(sortedCount, mistakes);
+        resultLabel.text = $"Süre Bitti\nPuan: {score}\nHata: {mistakes}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}\nGörev başarısız.";
         RefreshHud("Süre bitti. Görev başarısız.");
     }
 

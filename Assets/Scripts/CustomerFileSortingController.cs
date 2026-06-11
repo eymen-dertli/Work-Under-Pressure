@@ -12,6 +12,7 @@ public sealed class CustomerFileSortingController : MonoBehaviour
     public static event Action<int> MistakePercentReported;
 
     private const string ControllerName = "_CustomerFileSortingController";
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.CustomerFiles;
     private const int VisibleRows = 13;
     private const float RowHeight = 42f;
 
@@ -64,6 +65,7 @@ public sealed class CustomerFileSortingController : MonoBehaviour
     private Slider scrollSlider;
     private TextMeshProUGUI statusLabel;
     private TextMeshProUGUI percentLabel;
+    private TaskTimer taskTimer;
     private int selectedIndex;
     private int firstVisibleIndex;
 
@@ -135,10 +137,16 @@ public sealed class CustomerFileSortingController : MonoBehaviour
 
     private void Open()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
         ShuffleNames();
         selectedIndex = 0;
         firstVisibleIndex = 0;
         panelRoot.SetActive(true);
+        StartTaskTimer();
         statusLabel.text = "Müşteri dosyalarını alfabetik sıraya koy.";
         percentLabel.text = "Hata: %0";
         RefreshRows();
@@ -225,16 +233,57 @@ public sealed class CustomerFileSortingController : MonoBehaviour
         }
 
         int mistakePercent = Mathf.RoundToInt(wrongCount / (float)currentOrder.Count * 100f);
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(currentOrder.Count - wrongCount, wrongCount);
         percentLabel.text = $"Hata: %{mistakePercent}";
         MistakePercentReported?.Invoke(mistakePercent);
 
         if (wrongCount == 0)
         {
-            statusLabel.text = "Doğru. Tüm dosyalar alfabetik sırada.";
+            if (taskTimer != null)
+            {
+                taskTimer.StopTimer();
+            }
+
+            TaskAssignmentSession.MarkTaskCompleted(TaskKind);
+            statusLabel.text = $"Doğru. Tüm dosyalar alfabetik sırada.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
             return;
         }
 
-        statusLabel.text = $"Sıralamada hata var. {wrongCount} dosya yanlış yerde.";
+        statusLabel.text = $"Sıralamada hata var. {wrongCount} dosya yanlış yerde.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
+    }
+
+    private void StartTaskTimer()
+    {
+        if (!TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            return;
+        }
+
+        if (taskTimer == null)
+        {
+            taskTimer = gameObject.AddComponent<TaskTimer>();
+        }
+
+        taskTimer.TimerExpired -= HandleTaskTimerExpired;
+        taskTimer.TimerExpired += HandleTaskTimerExpired;
+        taskTimer.StartTimer(assignment.TimeLimitSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
+    }
+
+    private void HandleTaskTimerExpired(TaskTimer expiredTimer)
+    {
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
+        int wrongCount = 0;
+        for (int i = 0; i < currentOrder.Count; i++)
+        {
+            if (currentOrder[i] != sortedNames[i])
+            {
+                wrongCount++;
+            }
+        }
+
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(currentOrder.Count - wrongCount, wrongCount);
+        statusLabel.text = $"Süre bitti. Görev başarısız.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
     }
 
     private void BuildUi()

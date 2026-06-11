@@ -10,6 +10,7 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
     public static event Action<int> MistakePercentReported;
 
     private const string ControllerName = "_IncomingDocumentsSortingController";
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.IncomingDocuments;
 
     private static readonly IncomingDocument[] Documents =
     {
@@ -69,6 +70,7 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
     private TextMeshProUGUI progressLabel;
     private TextMeshProUGUI statusLabel;
     private TextMeshProUGUI mistakeLabel;
+    private TaskTimer taskTimer;
     private int currentDocumentIndex;
     private int mistakeCount;
     private int completedCount;
@@ -140,10 +142,16 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
 
     private void Open()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
         currentDocumentIndex = 0;
         mistakeCount = 0;
         completedCount = 0;
         panelRoot.SetActive(true);
+        StartTaskTimer();
         ShowCurrentDocument("Evrakı oku ve doğru rafa ayır.");
     }
 
@@ -164,11 +172,18 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
         if (currentDocumentIndex >= Documents.Length - 1)
         {
             int mistakePercent = Mathf.RoundToInt(mistakeCount / (float)(mistakeCount + Documents.Length) * 100f);
+            int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(completedCount, mistakeCount);
             MistakePercentReported?.Invoke(mistakePercent);
+            TaskAssignmentSession.MarkTaskCompleted(TaskKind);
+            if (taskTimer != null)
+            {
+                taskTimer.StopTimer();
+            }
+
             titleLabel.text = "Evraklar tamamlandı";
             bodyLabel.text = "Tüm gelen evraklar incelendi ve sınıflandırıldı.";
             progressLabel.text = $"{Documents.Length}/{Documents.Length}";
-            statusLabel.text = mistakeCount == 0 ? "Kusursuz sınıflandırma." : $"Görev bitti. Hata oranı: %{mistakePercent}";
+            statusLabel.text = $"{(mistakeCount == 0 ? "Kusursuz sınıflandırma." : $"Görev bitti. Hata oranı: %{mistakePercent}")}\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
             mistakeLabel.text = $"Hata: %{mistakePercent}";
             return;
         }
@@ -192,6 +207,31 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
         int attempts = completedCount + mistakeCount;
         int mistakePercent = attempts > 0 ? Mathf.RoundToInt(mistakeCount / (float)attempts * 100f) : 0;
         mistakeLabel.text = $"Hata: %{mistakePercent}";
+    }
+
+    private void StartTaskTimer()
+    {
+        if (!TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            return;
+        }
+
+        if (taskTimer == null)
+        {
+            taskTimer = gameObject.AddComponent<TaskTimer>();
+        }
+
+        taskTimer.TimerExpired -= HandleTaskTimerExpired;
+        taskTimer.TimerExpired += HandleTaskTimerExpired;
+        taskTimer.StartTimer(assignment.TimeLimitSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
+    }
+
+    private void HandleTaskTimerExpired(TaskTimer expiredTimer)
+    {
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
+        int accuracy = TaskAssignmentSession.CalculateAccuracyPercent(completedCount, mistakeCount);
+        statusLabel.text = $"Süre bitti. Görev başarısız.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, accuracy)}";
     }
 
     private void BuildUi()

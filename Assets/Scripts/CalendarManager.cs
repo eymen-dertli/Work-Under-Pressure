@@ -7,6 +7,7 @@ using UnityEngine.UI;
 public sealed class CalendarManager : MonoBehaviour
 {
     private const string ControllerName = "_CalendarManager";
+    private const OfficeTaskKind TaskKind = OfficeTaskKind.Calendar;
     private const string MonthTitle = "HAZİRAN";
 
     private static readonly CalendarPlan[] ExistingPlans =
@@ -60,10 +61,13 @@ public sealed class CalendarManager : MonoBehaviour
     private TextMeshProUGUI selectedTimeLabel;
     private Button scheduleButton;
     private RectTransform detailListRoot;
+    private TaskTimer taskTimer;
     private int currentTaskIndex;
     private int correctSchedules;
     private int wrongSchedules;
     private string selectedTime;
+    private bool taskStarted;
+    private bool taskEnded;
 
     public int CurrentDay => currentDay;
 
@@ -124,21 +128,31 @@ public sealed class CalendarManager : MonoBehaviour
 
     public void ToggleCalendar()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
         EnsureUi();
         bool open = !panelRoot.activeSelf;
         panelRoot.SetActive(open);
 
         if (open)
         {
-            StartTaskSession();
+            StartTaskSessionIfNeeded();
         }
     }
 
     public void Open()
     {
+        if (!TaskAssignmentSession.IsTaskEnabled(TaskKind))
+        {
+            return;
+        }
+
         EnsureUi();
         panelRoot.SetActive(true);
-        StartTaskSession();
+        StartTaskSessionIfNeeded();
     }
 
     public void Close()
@@ -187,6 +201,12 @@ public sealed class CalendarManager : MonoBehaviour
             correctSchedules++;
             scheduledPlans.Add(task.ToCalendarPlan());
             currentTaskIndex++;
+            if (currentTaskIndex >= ScheduleTasks.Length && taskTimer != null)
+            {
+                taskTimer.StopTimer();
+                taskEnded = true;
+                TaskAssignmentSession.MarkTaskCompleted(TaskKind);
+            }
         }
         else
         {
@@ -205,8 +225,22 @@ public sealed class CalendarManager : MonoBehaviour
         }
     }
 
+    private void StartTaskSessionIfNeeded()
+    {
+        if (taskStarted && !taskEnded)
+        {
+            RefreshCalendar();
+            RefreshTaskPanel();
+            return;
+        }
+
+        StartTaskSession();
+    }
+
     private void StartTaskSession()
     {
+        taskStarted = true;
+        taskEnded = false;
         scheduledPlans.Clear();
         currentTaskIndex = 0;
         correctSchedules = 0;
@@ -215,6 +249,36 @@ public sealed class CalendarManager : MonoBehaviour
         selectedTime = TimeOptions[0];
         RefreshCalendar();
         RefreshTaskPanel();
+        StartTaskTimer();
+    }
+
+    private void StartTaskTimer()
+    {
+        if (!TaskAssignmentSession.TryGetAssignment(TaskKind, out TaskAssignment assignment))
+        {
+            return;
+        }
+
+        if (taskTimer == null)
+        {
+            taskTimer = gameObject.AddComponent<TaskTimer>();
+        }
+
+        taskTimer.TimerExpired -= HandleTaskTimerExpired;
+        taskTimer.TimerExpired += HandleTaskTimerExpired;
+        taskTimer.StartTimer(assignment.TimeLimitSeconds);
+        TaskAssignmentSession.RegisterTaskTimer(TaskKind, taskTimer);
+    }
+
+    private void HandleTaskTimerExpired(TaskTimer expiredTimer)
+    {
+        currentTaskIndex = ScheduleTasks.Length;
+        taskEnded = true;
+        TaskAssignmentSession.MarkTaskFailed(TaskKind);
+        RefreshTaskPanel();
+        taskLabel.text = "Süre bitti. Görev başarısız.";
+        selectedTimeLabel.text = TaskAssignmentSession.BuildAccuracyLine(TaskKind, TaskAssignmentSession.CalculateAccuracyPercent(correctSchedules, wrongSchedules));
+        scheduleButton.interactable = false;
     }
 
     private void RefreshCalendar()
@@ -542,7 +606,7 @@ public sealed class CalendarManager : MonoBehaviour
 
         taskLabel.text = hasTask
             ? ScheduleTasks[currentTaskIndex].Instruction
-            : "Tüm planlama notları takvime eklendi.";
+            : $"Tüm planlama notları takvime eklendi.\n{TaskAssignmentSession.BuildAccuracyLine(TaskKind, TaskAssignmentSession.CalculateAccuracyPercent(correctSchedules, wrongSchedules))}";
 
         selectedTimeLabel.text = $"Seçilen: {currentDay} {MonthTitle}, {selectedTime}";
         scheduleButton.interactable = hasTask;

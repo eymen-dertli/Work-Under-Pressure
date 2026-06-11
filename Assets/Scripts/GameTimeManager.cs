@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class GameTimeManager : MonoBehaviour
@@ -21,6 +24,7 @@ public sealed class GameTimeManager : MonoBehaviour
     [Header("Clock UI")]
     [SerializeField] private GameObject panelRoot;
     [SerializeField] private TextMeshProUGUI timeLabel;
+    [SerializeField] private TextMeshProUGUI taskListLabel;
     [SerializeField] private Button closeButton;
 
     [Header("Analog Hands")]
@@ -41,6 +45,41 @@ public sealed class GameTimeManager : MonoBehaviour
     public float TimeMultiplier => gameMinutesPerRealSecond;
     public bool IsPaused => isPaused;
     public string CurrentTimeText => $"{CurrentHour:00}:{CurrentMinute:00}";
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+    private static void RegisterSceneLoadedHook()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void InstallForInitialScene()
+    {
+        EnsureManagerForScene(SceneManager.GetActiveScene());
+    }
+
+    private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        EnsureManagerForScene(scene);
+    }
+
+    private static void EnsureManagerForScene(Scene scene)
+    {
+        if (!IsLevelScene(scene.name) || FindAnyObjectByType<GameTimeManager>() != null)
+        {
+            return;
+        }
+
+        GameObject managerObject = new GameObject("_GameTimeManager");
+        managerObject.AddComponent<GameTimeManager>();
+    }
+
+    private static bool IsLevelScene(string sceneName)
+    {
+        LevelDefinition level = LevelDatabase.Load().GetLevelBySceneName(sceneName);
+        return level != null;
+    }
 
     private void Awake()
     {
@@ -142,12 +181,85 @@ public sealed class GameTimeManager : MonoBehaviour
             timeLabel.text = CurrentTimeText;
         }
 
+        RefreshTaskList();
         RotateHands();
 
         if (notifyMinuteChanged)
         {
             MinuteChanged?.Invoke(CurrentHour, CurrentMinute);
         }
+    }
+
+    private void RefreshTaskList()
+    {
+        if (taskListLabel == null)
+        {
+            return;
+        }
+
+        if (!TaskAssignmentSession.HasAssignments && !TaskAssignmentSession.HasSelectedTasks)
+        {
+            taskListLabel.text = "Görevler henüz seçilmedi.";
+            return;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        if (TaskAssignmentSession.HasAssignments)
+        {
+            IReadOnlyList<TaskAssignment> assignments = TaskAssignmentSession.CurrentAssignments;
+            for (int i = 0; i < assignments.Count; i++)
+            {
+                TaskAssignment assignment = assignments[i];
+                string stateText = $"Süre: {TaskAssignmentSession.FormatSeconds(assignment.TimeLimitSeconds)}";
+
+                if (TaskAssignmentSession.TryGetProgress(assignment.Kind, out TaskAssignmentSession.TaskProgress progress))
+                {
+                    if (progress.IsCompleted)
+                    {
+                        stateText = "Tamamlandı";
+                    }
+                    else if (progress.IsFailed)
+                    {
+                        stateText = "Süre bitti";
+                    }
+                    else if (progress.IsRunning)
+                    {
+                        stateText = $"Kalan: {TaskAssignmentSession.FormatSeconds(progress.RemainingSeconds)}";
+                    }
+                    else if (progress.HasStarted)
+                    {
+                        stateText = $"Durdu: {TaskAssignmentSession.FormatSeconds(progress.RemainingSeconds)}";
+                    }
+                }
+
+                builder.Append(assignment.DisplayName)
+                    .Append("  |  ")
+                    .Append(stateText)
+                    .Append("  |  Hedef: %")
+                    .Append(assignment.AccuracyTargetPercent);
+
+                if (i < assignments.Count - 1)
+                {
+                    builder.AppendLine();
+                }
+            }
+        }
+        else
+        {
+            IReadOnlyList<TaskSelection> selectedTasks = TaskAssignmentSession.CurrentSelectedTasks;
+            for (int i = 0; i < selectedTasks.Count; i++)
+            {
+                builder.Append(selectedTasks[i].DisplayName)
+                    .Append("  |  Süre seçilmedi");
+
+                if (i < selectedTasks.Count - 1)
+                {
+                    builder.AppendLine();
+                }
+            }
+        }
+
+        taskListLabel.text = builder.ToString();
     }
 
     private void RotateHands()
@@ -181,7 +293,7 @@ public sealed class GameTimeManager : MonoBehaviour
 
     private void EnsureUi()
     {
-        if (panelRoot != null && timeLabel != null)
+        if (panelRoot != null && timeLabel != null && taskListLabel != null)
         {
             if (closeButton != null)
             {
@@ -198,15 +310,28 @@ public sealed class GameTimeManager : MonoBehaviour
 
         GameObject card = OfficeMiniGameUi.CreateImage("Clock Card", panelRoot.transform, new Color(0.12f, 0.13f, 0.14f, 0.95f));
         RectTransform cardRect = card.GetComponent<RectTransform>();
-        cardRect.sizeDelta = new Vector2(360f, 210f);
+        cardRect.sizeDelta = new Vector2(720f, 420f);
         cardRect.anchoredPosition = Vector2.zero;
 
         timeLabel = OfficeMiniGameUi.CreateLabel("TimeLabel", card.transform, "09:00", 54f, Color.white);
         RectTransform timeRect = timeLabel.GetComponent<RectTransform>();
-        timeRect.anchorMin = Vector2.zero;
-        timeRect.anchorMax = Vector2.one;
-        timeRect.offsetMin = new Vector2(24f, 52f);
-        timeRect.offsetMax = new Vector2(-24f, -42f);
+        timeRect.anchorMin = new Vector2(0f, 1f);
+        timeRect.anchorMax = new Vector2(1f, 1f);
+        timeRect.offsetMin = new Vector2(24f, -104f);
+        timeRect.offsetMax = new Vector2(-24f, -24f);
+
+        taskListLabel = OfficeMiniGameUi.CreateLabel("TaskListLabel", card.transform, string.Empty, 21f, Color.white);
+        RectTransform taskListRect = taskListLabel.GetComponent<RectTransform>();
+        taskListRect.anchorMin = Vector2.zero;
+        taskListRect.anchorMax = Vector2.one;
+        taskListRect.offsetMin = new Vector2(42f, 86f);
+        taskListRect.offsetMax = new Vector2(-42f, -124f);
+        taskListLabel.alignment = TextAlignmentOptions.TopLeft;
+        taskListLabel.fontStyle = FontStyles.Bold;
+        taskListLabel.textWrappingMode = TextWrappingModes.Normal;
+        taskListLabel.enableAutoSizing = true;
+        taskListLabel.fontSizeMin = 15f;
+        taskListLabel.fontSizeMax = 21f;
 
         closeButton = OfficeMiniGameUi.CreateButton("Close Clock", card.transform, "KAPAT", new Vector2(130f, 48f), new Color(0.25f, 0.38f, 0.52f, 1f), ClosePanel);
         RectTransform closeRect = closeButton.GetComponent<RectTransform>();
