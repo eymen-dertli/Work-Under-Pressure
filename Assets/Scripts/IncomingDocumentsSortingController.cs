@@ -14,52 +14,52 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
     private static readonly IncomingDocument[] Documents =
     {
         new IncomingDocument(
-            "Tedarikci odeme bildirimi",
-            "Muhasebe ekibi, tedarikci faturasinin bugun mesai bitmeden onaylanmasini bekliyor.\nGecikirse sevkiyat sabah cikmayabilir.\nDosyada eksik imza yok, sadece yonetici onayi gerekiyor.\nBu evrak kapanmadan satin alma islemi ilerlemeyecek.",
+            "Tedarikçi ödeme bildirimi",
+            "Muhasebe ekibi, tedarikçi faturasının bugün mesai bitmeden onaylanmasını bekliyor.\nGecikirse sevkiyat sabah çıkmayabilir.\nDosyada eksik imza yok, sadece yönetici onayı gerekiyor.\nBu evrak kapanmadan satın alma işlemi ilerlemeyecek.",
             DocumentPriority.Urgent),
         new IncomingDocument(
-            "Arsiv kopya talebi",
-            "Gecen ay kapatilan dosyanin bir kopyasi arsive eklenmek uzere istendi.\nTalep sahibi hafta icinde donus yapilmasinin yeterli olacagini belirtti.\nIslem tamamlanmasa da bugunku operasyonu etkilemiyor.\nBelge sadece kayit duzeni icin isteniyor.",
+            "Arşiv kopya talebi",
+            "Geçen ay kapatılan dosyanın bir kopyası arşive eklenmek üzere istendi.\nTalep sahibi hafta içinde dönüş yapılmasının yeterli olacağını belirtti.\nİşlem tamamlanmasa da bugünkü operasyonu etkilemiyor.\nBelge sadece kayıt düzeni için isteniyor.",
             DocumentPriority.CanWait),
         new IncomingDocument(
-            "Musteri bilgi guncelleme",
-            "Musteri adres bilgisinde degisiklik oldugunu bildirdi.\nSiparis bugun cikmayacak, ancak kayitlarin dogru kalmasi gerekiyor.\nDosya standart kontrol akisi ile guncellenebilir.\nBir sonraki islemden once sisteme islenmesi yeterli.",
+            "Müşteri bilgi güncelleme",
+            "Müşteri adres bilgisinde değişiklik olduğunu bildirdi.\nSipariş bugün çıkmayacak, ancak kayıtların doğru kalması gerekiyor.\nDosya standart kontrol akışı ile güncellenebilir.\nBir sonraki işlemden önce sisteme işlenmesi yeterli.",
             DocumentPriority.Normal),
         new IncomingDocument(
-            "Kurye teslim tutanagi",
-            "Kurye, teslim tutanaginda alici imzasinin eksik oldugunu iletti.\nPaket aliciya ulasmis gorunuyor fakat teyit kaydi kapanmadi.\nGunun kapanis raporu bu bilgiye bagli.\nTutanak tamamlanmadan teslimat kesinlestirilemiyor.",
+            "Kurye teslim tutanağı",
+            "Kurye, teslim tutanağında alıcı imzasının eksik olduğunu iletti.\nPaket alıcıya ulaşmış görünüyor fakat teyit kaydı kapanmadı.\nGünün kapanış raporu bu bilgiye bağlı.\nTutanak tamamlanmadan teslimat kesinleştirilemiyor.",
             DocumentPriority.Urgent),
         new IncomingDocument(
-            "Toplanti notlari duzenleme",
-            "Dunku toplantinin notlari temiz bir dosyaya aktarilacak.\nEkip notlara yarin ogleden sonra bakacak.\nBugun yalnizca taslak halinin saklanmasi yeterli.\nIcerik karari etkileyen bir onay beklemiyor.",
+            "Toplantı notları düzenleme",
+            "Dünkü toplantının notları temiz bir dosyaya aktarılacak.\nEkip notlara yarın öğleden sonra bakacak.\nBugün yalnızca taslak halinin saklanması yeterli.\nİçerik kararı etkileyen bir onay beklemiyor.",
             DocumentPriority.CanWait),
         new IncomingDocument(
             "Personel izin formu",
-            "Personel gelecek hafta icin izin formu birakti.\nFormda tarih ve imza bilgileri tam.\nPlanlama listesine islenmesi gerekiyor.\nAyni gun yanit zorunlu degil, fakat rutin akista bekletilmemeli.",
+            "Personel gelecek hafta için izin formu bıraktı.\nFormda tarih ve imza bilgileri tam.\nPlanlama listesine işlenmesi gerekiyor.\nAynı gün yanıt zorunlu değil, fakat rutin akışta bekletilmemeli.",
             DocumentPriority.Normal),
         new IncomingDocument(
-            "Sozlesme ek protokol",
-            "Musteri, ek protokolun bugunku gorusme baslamadan dosyaya eklenmesini istedi.\nGorusme saati yaklasiyor ve eski metin kullanilirsa yanlis madde okunabilir.\nBelge hazir, yalnizca dogru klasore alinacak.\nIlgili ekip bu dosyayi bekliyor.",
+            "Sözleşme ek protokol",
+            "Müşteri, ek protokolün bugünkü görüşme başlamadan dosyaya eklenmesini istedi.\nGörüşme saati yaklaşıyor ve eski metin kullanılırsa yanlış madde okunabilir.\nBelge hazır, yalnızca doğru klasöre alınacak.\nİlgili ekip bu dosyayı bekliyor.",
             DocumentPriority.Urgent),
         new IncomingDocument(
-            "Katalog baski onayi",
-            "Pazarlama ekibi yeni katalog taslagini kontrol icin gonderdi.\nBaski tarihi henuz kesinlesmedi.\nHafta sonuna kadar geri donus yapilmasi yeterli gorunuyor.\nBugunku musteri dosyalarina etkisi yok.",
+            "Katalog baskı onayı",
+            "Pazarlama ekibi yeni katalog taslağını kontrol için gönderdi.\nBaskı tarihi henüz kesinleşmedi.\nHafta sonuna kadar geri dönüş yapılması yeterli görünüyor.\nBugünkü müşteri dosyalarına etkisi yok.",
             DocumentPriority.CanWait),
         new IncomingDocument(
-            "Depo stok duzeltmesi",
-            "Depo kaydinda iki urun miktari farkli gorunuyor.\nFark su an sevkiyati durdurmuyor, ancak stok raporunda duzeltilmeli.\nKontrol sonrasi sisteme not dusulmesi bekleniyor.\nGunun normal is takibine alinabilir.",
+            "Depo stok düzeltmesi",
+            "Depo kaydında iki ürün miktarı farklı görünüyor.\nFark şu an sevkiyatı durdurmuyor, ancak stok raporunda düzeltilmeli.\nKontrol sonrası sisteme not düşülmesi bekleniyor.\nGünün normal iş takibine alınabilir.",
             DocumentPriority.Normal),
         new IncomingDocument(
-            "Iade itiraz formu",
-            "Musteri iade itirazinda son yanit saatinin bugun oldugunu belirtti.\nForm incelenmezse otomatik kabul sureci baslayabilir.\nEk belgeler tam ve karar icin hazir.\nOncelik verilmesi gereken bir cevap bekliyor.",
+            "İade itiraz formu",
+            "Müşteri iade itirazında son yanıt saatinin bugün olduğunu belirtti.\nForm incelenmezse otomatik kabul süreci başlayabilir.\nEk belgeler tam ve karar için hazır.\nÖncelik verilmesi gereken bir cevap bekliyor.",
             DocumentPriority.Urgent),
         new IncomingDocument(
-            "Egitim katilim listesi",
-            "Gelecek ay yapilacak egitim icin katilim listesi geldi.\nListe henuz kesinlesmeyecek, yalnizca ilk taslak olarak saklanacak.\nHafta icinde isim ekleme cikarma yapilabilir.\nSimdilik beklemede kalmasi sorun yaratmaz.",
+            "Eğitim katılım listesi",
+            "Gelecek ay yapılacak eğitim için katılım listesi geldi.\nListe henüz kesinleşmeyecek, yalnızca ilk taslak olarak saklanacak.\nHafta içinde isim ekleme çıkarma yapılabilir.\nŞimdilik beklemede kalması sorun yaratmaz.",
             DocumentPriority.CanWait),
         new IncomingDocument(
-            "Bakim servis raporu",
-            "Ofis yazicisi icin servis raporu geldi.\nCihaz calisiyor, rapor sadece bakim kaydina eklenecek.\nTeknik ekip formun dosyalanmasini istiyor.\nGunluk akista normal siraya alinabilir.",
+            "Bakım servis raporu",
+            "Ofis yazıcısı için servis raporu geldi.\nCihaz çalışıyor, rapor sadece bakım kaydına eklenecek.\nTeknik ekip formun dosyalanmasını istiyor.\nGünlük akışta normal sıraya alınabilir.",
             DocumentPriority.Normal),
     };
 
@@ -144,7 +144,7 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
         mistakeCount = 0;
         completedCount = 0;
         panelRoot.SetActive(true);
-        ShowCurrentDocument("Evraki oku ve dogru rafa ayir.");
+        ShowCurrentDocument("Evrakı oku ve doğru rafa ayır.");
     }
 
     private void SelectPriority(DocumentPriority selectedPriority)
@@ -155,7 +155,7 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
         {
             mistakeCount++;
             UpdateMistakeLabel();
-            statusLabel.text = "Bu sinif uygun degil. Metindeki ipuclarini tekrar oku.";
+            statusLabel.text = "Bu sınıf uygun değil. Metindeki ipuçlarını tekrar oku.";
             return;
         }
 
@@ -165,16 +165,16 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
         {
             int mistakePercent = Mathf.RoundToInt(mistakeCount / (float)(mistakeCount + Documents.Length) * 100f);
             MistakePercentReported?.Invoke(mistakePercent);
-            titleLabel.text = "Evraklar tamamlandi";
-            bodyLabel.text = "Tum gelen evraklar incelendi ve siniflandirildi.";
+            titleLabel.text = "Evraklar tamamlandı";
+            bodyLabel.text = "Tüm gelen evraklar incelendi ve sınıflandırıldı.";
             progressLabel.text = $"{Documents.Length}/{Documents.Length}";
-            statusLabel.text = mistakeCount == 0 ? "Kusursuz siniflandirma." : $"Gorev bitti. Hata orani: %{mistakePercent}";
+            statusLabel.text = mistakeCount == 0 ? "Kusursuz sınıflandırma." : $"Görev bitti. Hata oranı: %{mistakePercent}";
             mistakeLabel.text = $"Hata: %{mistakePercent}";
             return;
         }
 
         currentDocumentIndex++;
-        ShowCurrentDocument("Dogru. Siradaki evraki incele.");
+        ShowCurrentDocument("Doğru. Sıradaki evrakı incele.");
     }
 
     private void ShowCurrentDocument(string statusText)
@@ -278,9 +278,9 @@ public sealed class IncomingDocumentsSortingController : MonoBehaviour
 
     private void CreatePriorityTrays(Transform parent)
     {
-        CreatePriorityButton(parent, "AcilTray", "ACIL", new Vector2(-198f, 160f), new Color(0.72f, 0.24f, 0.2f, 1f), DocumentPriority.Urgent);
+        CreatePriorityButton(parent, "AcilTray", "ACİL", new Vector2(-198f, 160f), new Color(0.72f, 0.24f, 0.2f, 1f), DocumentPriority.Urgent);
         CreatePriorityButton(parent, "NormalTray", "NORMAL", new Vector2(-198f, 40f), new Color(0.24f, 0.45f, 0.68f, 1f), DocumentPriority.Normal);
-        CreatePriorityButton(parent, "WaitTray", "BEKLEYEBILIR", new Vector2(-198f, -80f), new Color(0.45f, 0.56f, 0.3f, 1f), DocumentPriority.CanWait);
+        CreatePriorityButton(parent, "WaitTray", "BEKLEYEBİLİR", new Vector2(-198f, -80f), new Color(0.45f, 0.56f, 0.3f, 1f), DocumentPriority.CanWait);
     }
 
     private void CreatePriorityButton(Transform parent, string name, string text, Vector2 anchoredPosition, Color color, DocumentPriority priority)

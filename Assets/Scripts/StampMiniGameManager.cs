@@ -1,29 +1,74 @@
-using System.Collections.Generic;
+using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public sealed class StampMiniGameManager : MonoBehaviour
 {
+    private const string ControllerName = "_StampMiniGameManager";
+
+    private static readonly StampDefinition[] StampDefinitions =
+    {
+        new StampDefinition("aksoy", "AKSOY\nLOJİSTİK", new Color(0.11f, 0.36f, 0.62f, 1f), StampShape.Rectangle),
+        new StampDefinition("mira", "MİRA\nTEKNOLOJİ", new Color(0.52f, 0.18f, 0.52f, 1f), StampShape.Rectangle),
+        new StampDefinition("duru", "DURU\nGIDA", new Color(0.14f, 0.46f, 0.25f, 1f), StampShape.Rectangle),
+        new StampDefinition("yilmaz", "YILMAZ\nHUKUK", new Color(0.72f, 0.16f, 0.12f, 1f), StampShape.Rectangle),
+    };
+
+    private static readonly DocumentCase[] DocumentCases =
+    {
+        new DocumentCase(
+            "Teslimat Raporu",
+            "Sabah gelen sevkiyat listesinde Aksoy Lojistik tarafından taşınan paketler kontrol edildi.\n\nDepo sorumlusu teslim saatini rapora ekledi. Evrak ilgili firma kaşesiyle kapatılacak.",
+            "aksoy"),
+        new DocumentCase(
+            "Servis Formu",
+            "Mira Teknoloji için hazırlanan teknik servis kaydında iki dizüstü bilgisayar ve bir monitör yer alıyor.\n\nCihazlar teslim alınmadan önce firma kaşesi belgeye basılmalı.",
+            "mira"),
+        new DocumentCase(
+            "Tedarik Notu",
+            "Mutfak stok listesi Duru Gıda siparişi için güncellendi.\n\nPeynir ve içecek kalemleri fatura ile eşleşiyor. Rapor ilgili tedarikçi kaşesiyle onaylanacak.",
+            "duru"),
+        new DocumentCase(
+            "Vekalet Yazisi",
+            "Yılmaz Hukuk tarafından gönderilen sözleşme eki arşiv kaydına alındı.\n\nDosya numarası kontrol edildi. Belge, hukuk bürosunun kaşesiyle kapatılacak.",
+            "yilmaz"),
+        new DocumentCase(
+            "Kargo Iade Formu",
+            "İade edilen koliler Aksoy Lojistik teslim tutanağında eksiksiz görünüyor.\n\nŞube kodu raporun altına yazıldı. Doğru firma kaşesini kullan.",
+            "aksoy"),
+        new DocumentCase(
+            "Bakim Raporu",
+            "Ofis ağı için kurulan yeni yazılım Mira Teknoloji ekibi tarafından test edildi.\n\nRaporun sistem kaydına alınması için ilgili şirket kaşesi gerekiyor.",
+            "mira"),
+        new DocumentCase(
+            "Depo Fisi",
+            "Duru Gıda teslimatında gelen ürünlerin son kullanma tarihleri kontrol edildi.\n\nEksik kalem yok. Depo fişi tedarikçi kaşesiyle dosyalanacak.",
+            "duru"),
+        new DocumentCase(
+            "Dava Dosyasi",
+            "Yılmaz Hukuk için hazırlanan görüşme notları sözleşme klasörüne eklendi.\n\nYetkili kişi imza attı. Şirket adına uygun kaşeyi seç.",
+            "yilmaz"),
+    };
+
     [Header("Trigger")]
     [SerializeField] private bool listenToClickableDeskObjects = true;
     [SerializeField] private ClickableDeskObject stampDeskObject;
 
-    [Header("Prefabs")]
-    [SerializeField] private GameObject documentPrefab;
-    [SerializeField] private GameObject stampPrefab;
-
     [Header("Game Setup")]
-    [SerializeField] private int documentCount = 12;
+    [SerializeField] private int documentCount = 8;
+    [SerializeField] private float nextDocumentDelay = 0.65f;
 
     [Header("Task Timer")]
+    [SerializeField] private bool useTaskTimer;
     [SerializeField] private TaskTimer taskTimer;
     [SerializeField] private float taskDurationSeconds = 75f;
     [SerializeField] private TimeoutBehavior timeoutBehavior = TimeoutBehavior.FailAndShowResult;
 
     [Header("UI")]
     [SerializeField] private GameObject panelRoot;
-    [SerializeField] private RectTransform documentParent;
+    [SerializeField] private RectTransform documentArea;
     [SerializeField] private RectTransform stampHome;
     [SerializeField] private TextMeshProUGUI correctLabel;
     [SerializeField] private TextMeshProUGUI wrongLabel;
@@ -31,13 +76,51 @@ public sealed class StampMiniGameManager : MonoBehaviour
     [SerializeField] private GameObject resultPanel;
     [SerializeField] private TextMeshProUGUI resultLabel;
 
-    private readonly Dictionary<DropZone, DocumentRuntimeData> documentsByZone = new Dictionary<DropZone, DocumentRuntimeData>();
-    private DraggableItem stampItem;
-    private bool stampSelected;
+    private TextMeshProUGUI progressLabel;
+    private TextMeshProUGUI documentTitleLabel;
+    private TextMeshProUGUI documentBodyLabel;
+    private TextMeshProUGUI stampMarkLabel;
+    private Image stampMarkImage;
+    private DocumentCase currentCase;
+    private int currentDocumentIndex;
     private int correctCount;
     private int wrongCount;
-    private int signedDocumentTarget;
-    private int signedDocumentsStamped;
+    private bool awaitingNextDocument;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+    private static void RegisterSceneLoadedHook()
+    {
+        SceneManager.sceneLoaded -= HandleSceneLoaded;
+        SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void InstallForInitialScene()
+    {
+        EnsureManagerForScene(SceneManager.GetActiveScene());
+    }
+
+    private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        EnsureManagerForScene(scene);
+    }
+
+    private static void EnsureManagerForScene(Scene scene)
+    {
+        if (!IsLevelScene(scene.name) || FindAnyObjectByType<StampMiniGameManager>() != null)
+        {
+            return;
+        }
+
+        GameObject managerObject = new GameObject(ControllerName);
+        managerObject.AddComponent<StampMiniGameManager>();
+    }
+
+    private static bool IsLevelScene(string sceneName)
+    {
+        LevelDefinition level = LevelDatabase.Load().GetLevelBySceneName(sceneName);
+        return level != null;
+    }
 
     private void OnEnable()
     {
@@ -50,13 +133,6 @@ public sealed class StampMiniGameManager : MonoBehaviour
     private void OnDisable()
     {
         ClickableDeskObject.Clicked -= HandleDeskObjectClicked;
-        foreach (DropZone zone in documentsByZone.Keys)
-        {
-            if (zone != null)
-            {
-                zone.ItemEvaluated -= HandleStampDrop;
-            }
-        }
 
         if (taskTimer != null)
         {
@@ -68,16 +144,21 @@ public sealed class StampMiniGameManager : MonoBehaviour
     {
         EnsureUi();
         ResetGame();
-        SpawnStamp();
-        SpawnDocuments();
+        CreateStampButtons();
         panelRoot.SetActive(true);
         resultPanel.SetActive(false);
-        StartTaskTimer();
-        RefreshHud("Sadece imzali evraklara kase vur.");
+        if (useTaskTimer)
+        {
+            StartTaskTimer();
+        }
+        ShowCurrentDocument();
     }
 
     public void CloseMiniGame()
     {
+        StopAllCoroutines();
+        awaitingNextDocument = false;
+
         if (panelRoot != null)
         {
             panelRoot.SetActive(false);
@@ -91,14 +172,17 @@ public sealed class StampMiniGameManager : MonoBehaviour
 
     public void FinishMiniGame()
     {
+        StopAllCoroutines();
+        awaitingNextDocument = false;
+
         if (taskTimer != null)
         {
             taskTimer.StopTimer();
         }
 
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sonuc\nDogru: {correctCount}\nYanlis: {wrongCount}";
-        RefreshHud("Kase gorevi tamamlandi.");
+        resultLabel.text = $"Sonuç\nDoğru: {correctCount}\nYanlış: {wrongCount}";
+        RefreshHud("Kaşe görevi tamamlandı.");
     }
 
     private void StartTaskTimer()
@@ -121,219 +205,186 @@ public sealed class StampMiniGameManager : MonoBehaviour
             return;
         }
 
+        StopAllCoroutines();
+        awaitingNextDocument = false;
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sure Bitti\nDogru: {correctCount}\nYanlis: {wrongCount}\nGorev basarisiz.";
-        RefreshHud("Sure bitti. Gorev basarisiz.");
+        resultLabel.text = $"Süre Bitti\nDoğru: {correctCount}\nYanlış: {wrongCount}\nGörev başarısız.";
+        RefreshHud("Süre bitti. Görev başarısız.");
     }
 
     private void HandleDeskObjectClicked(ClickableDeskObject clickedObject)
     {
-        if (OfficeMiniGameUi.MatchesClickedObject(clickedObject, stampDeskObject, "stamp", "kase", "muhur"))
+        if (IsMainStampObject(clickedObject))
         {
             StartMiniGame();
         }
     }
 
+    private bool IsMainStampObject(ClickableDeskObject clickedObject)
+    {
+        if (clickedObject == null)
+        {
+            return false;
+        }
+
+        string clickedText = $"{clickedObject.ObjectId} {clickedObject.DisplayName} {clickedObject.gameObject.name}".ToLowerInvariant();
+        if (clickedText.Contains("tarih"))
+        {
+            return false;
+        }
+
+        if (stampDeskObject != null && clickedObject == stampDeskObject)
+        {
+            return true;
+        }
+
+        return clickedText.Contains("kaseler") || clickedText.Contains("stamps") || clickedText.Contains("stamp");
+    }
+
     private void ResetGame()
     {
+        StopAllCoroutines();
         correctCount = 0;
         wrongCount = 0;
-        signedDocumentTarget = 0;
-        signedDocumentsStamped = 0;
-        stampSelected = false;
-
-        foreach (DropZone zone in documentsByZone.Keys)
-        {
-            if (zone != null)
-            {
-                zone.ItemEvaluated -= HandleStampDrop;
-            }
-        }
-
-        documentsByZone.Clear();
-
-        if (documentParent != null)
-        {
-            OfficeMiniGameUi.ClearChildren(documentParent);
-        }
+        currentDocumentIndex = 0;
+        awaitingNextDocument = false;
 
         if (stampHome != null)
         {
             OfficeMiniGameUi.ClearChildren(stampHome);
         }
+
+        HideStampMark();
+        RefreshHud("Belgedeki kişi veya şirket adıyla eşleşen kaşeyi seç.");
     }
 
-    private void SpawnStamp()
+    private void CreateStampButtons()
     {
-        GameObject stampObject;
-        if (stampPrefab != null)
+        for (int i = 0; i < StampDefinitions.Length; i++)
         {
-            stampObject = Instantiate(stampPrefab, stampHome);
-        }
-        else
-        {
-            stampObject = OfficeMiniGameUi.CreateImage("Stamp", stampHome, new Color(0.56f, 0.1f, 0.12f, 1f));
-            RectTransform stampRect = stampObject.GetComponent<RectTransform>();
-            stampRect.sizeDelta = new Vector2(130f, 82f);
-            TextMeshProUGUI stampLabel = OfficeMiniGameUi.CreateLabel("StampLabel", stampObject.transform, "KASE", 24f, Color.white);
-            OfficeMiniGameUi.Stretch(stampLabel.GetComponent<RectTransform>(), Vector2.zero, Vector2.zero);
-        }
-
-        stampItem = stampObject.GetComponent<DraggableItem>();
-        if (stampItem == null)
-        {
-            stampItem = stampObject.AddComponent<DraggableItem>();
-        }
-
-        stampItem.Configure("stamp", true, false);
-
-        Button stampButton = stampObject.GetComponent<Button>();
-        if (stampButton == null)
-        {
-            stampButton = stampObject.AddComponent<Button>();
-        }
-
-        stampButton.onClick.RemoveAllListeners();
-        stampButton.onClick.AddListener(ToggleStampSelected);
-    }
-
-    private void SpawnDocuments()
-    {
-        for (int i = 0; i < documentCount; i++)
-        {
-            bool hasSignature = i % 3 != 0;
-            if (hasSignature)
-            {
-                signedDocumentTarget++;
-            }
-
-            GameObject documentObject = CreateDocumentObject(i + 1, hasSignature);
-            DropZone dropZone = documentObject.GetComponent<DropZone>();
-            if (dropZone == null)
-            {
-                dropZone = documentObject.AddComponent<DropZone>();
-            }
-
-            dropZone.Configure($"document_{i + 1}", "stamp", false);
-            dropZone.ItemEvaluated += HandleStampDrop;
-
-            TextMeshProUGUI stampMark = OfficeMiniGameUi.CreateLabel("StampMark", documentObject.transform, "KASELENDI", 16f, new Color(0.56f, 0.1f, 0.12f, 1f));
-            RectTransform markRect = stampMark.GetComponent<RectTransform>();
-            markRect.anchorMin = new Vector2(0.5f, 0f);
-            markRect.anchorMax = new Vector2(0.5f, 0f);
-            markRect.sizeDelta = new Vector2(150f, 32f);
-            markRect.anchoredPosition = new Vector2(0f, 28f);
-            stampMark.gameObject.SetActive(false);
-
-            Button documentButton = documentObject.GetComponent<Button>();
-            if (documentButton == null)
-            {
-                documentButton = documentObject.AddComponent<Button>();
-            }
-
-            DropZone capturedZone = dropZone;
-            documentButton.onClick.RemoveAllListeners();
-            documentButton.onClick.AddListener(() => TryClickStamp(capturedZone));
-
-            documentsByZone.Add(dropZone, new DocumentRuntimeData(hasSignature, stampMark));
+            StampDefinition stamp = StampDefinitions[i];
+            Button button = CreateStampButton(stampHome, stamp);
+            StampDefinition capturedStamp = stamp;
+            button.onClick.AddListener(() => SelectStamp(capturedStamp));
         }
     }
 
-    private GameObject CreateDocumentObject(int index, bool hasSignature)
+    private Button CreateStampButton(Transform parent, StampDefinition stamp)
     {
-        GameObject documentObject;
-        if (documentPrefab != null)
-        {
-            documentObject = Instantiate(documentPrefab, documentParent);
-        }
-        else
-        {
-            documentObject = OfficeMiniGameUi.CreateImage($"Document {index}", documentParent, new Color(0.98f, 0.96f, 0.9f, 1f));
-            RectTransform rect = documentObject.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(210f, 250f);
-        }
+        GameObject buttonObject = OfficeMiniGameUi.CreateImage($"Stamp {stamp.Label}", parent, new Color(1f, 1f, 1f, 0f));
+        RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
+        buttonRect.sizeDelta = new Vector2(230f, 92f);
 
-        TextMeshProUGUI body = documentObject.GetComponentInChildren<TextMeshProUGUI>(true);
-        if (body == null)
-        {
-            body = OfficeMiniGameUi.CreateLabel("DocumentText", documentObject.transform, string.Empty, 15f, new Color(0.12f, 0.1f, 0.08f, 1f));
-            OfficeMiniGameUi.Stretch(body.GetComponent<RectTransform>(), new Vector2(14f, 16f), new Vector2(-14f, -56f));
-        }
+        Button button = buttonObject.AddComponent<Button>();
+        Image targetImage = buttonObject.GetComponent<Image>();
+        targetImage.raycastTarget = true;
+        button.targetGraphic = targetImage;
 
-        body.text = $"EVRAK {index:00}\n\nTalep formu\nKontrol notu\nDepartman kaydi";
-        body.alignment = TextAlignmentOptions.TopLeft;
+        GameObject visual = OfficeMiniGameUi.CreateImage("StampVisual", buttonObject.transform, stamp.Color);
+        RectTransform visualRect = visual.GetComponent<RectTransform>();
+        visualRect.anchorMin = new Vector2(0.5f, 0.5f);
+        visualRect.anchorMax = new Vector2(0.5f, 0.5f);
+        visualRect.sizeDelta = GetStampVisualSize(stamp.Shape);
+        visualRect.anchoredPosition = Vector2.zero;
+        visualRect.localRotation = Quaternion.identity;
 
-        if (hasSignature)
-        {
-            TextMeshProUGUI signature = OfficeMiniGameUi.CreateLabel("Signature", documentObject.transform, "imza", 18f, new Color(0.08f, 0.08f, 0.08f, 1f));
-            RectTransform signatureRect = signature.GetComponent<RectTransform>();
-            signatureRect.anchorMin = new Vector2(1f, 0f);
-            signatureRect.anchorMax = new Vector2(1f, 0f);
-            signatureRect.sizeDelta = new Vector2(74f, 28f);
-            signatureRect.anchoredPosition = new Vector2(-54f, 28f);
-            signature.fontStyle = FontStyles.Italic;
-        }
+        Outline outline = visual.AddComponent<Outline>();
+        outline.effectColor = new Color(0.08f, 0.04f, 0.03f, 0.85f);
+        outline.effectDistance = new Vector2(3f, -3f);
 
-        return documentObject;
+        TextMeshProUGUI label = OfficeMiniGameUi.CreateLabel("StampLabel", buttonObject.transform, stamp.Label, 25f, Color.white);
+        RectTransform labelRect = label.GetComponent<RectTransform>();
+        OfficeMiniGameUi.Stretch(labelRect, new Vector2(16f, 12f), new Vector2(-16f, -12f));
+        label.enableAutoSizing = true;
+        label.fontSizeMin = 16f;
+        label.fontSizeMax = 25f;
+
+        return button;
     }
 
-    private void ToggleStampSelected()
+    private void SelectStamp(StampDefinition selectedStamp)
     {
-        stampSelected = !stampSelected;
-        RefreshHud(stampSelected ? "Kase secildi. Bir evraka tikla." : "Kase secimi kapandi.");
-    }
-
-    private void TryClickStamp(DropZone zone)
-    {
-        if (!stampSelected)
+        if (awaitingNextDocument || resultPanel.activeSelf)
         {
             return;
         }
 
-        StampDocument(zone);
-        stampSelected = false;
-    }
+        ApplyStampMark(selectedStamp);
 
-    private void HandleStampDrop(DraggableItem item, DropZone zone, bool accepted)
-    {
-        if (!accepted)
-        {
-            return;
-        }
-
-        StampDocument(zone);
-
-        if (item != null)
-        {
-            item.ReturnToHome();
-        }
-    }
-
-    private void StampDocument(DropZone zone)
-    {
-        if (zone == null || !documentsByZone.TryGetValue(zone, out DocumentRuntimeData documentData) || documentData.Stamped)
-        {
-            return;
-        }
-
-        documentData.Stamped = true;
-        documentData.StampMark.gameObject.SetActive(true);
-
-        if (documentData.HasSignature)
+        bool isCorrect = selectedStamp.Id == currentCase.RequiredStampId;
+        if (isCorrect)
         {
             correctCount++;
-            signedDocumentsStamped++;
-            RefreshHud("Dogru. Imzali evrak kaselendi.");
+            RefreshHud("Doğru isimli kaşe basıldı.");
         }
         else
         {
             wrongCount++;
-            RefreshHud("Imzasiz evraka kase vuruldu. Yanlis.");
+            RefreshHud($"Yanlış kaşe. Bu belge için {GetStampLabel(currentCase.RequiredStampId)} gerekiyordu.");
         }
 
-        if (signedDocumentsStamped >= signedDocumentTarget)
+        currentDocumentIndex++;
+        if (currentDocumentIndex >= Mathf.Max(1, documentCount))
         {
-            FinishMiniGame();
+            StartCoroutine(FinishAfterDelay());
+            return;
+        }
+
+        StartCoroutine(ShowNextDocumentAfterDelay());
+    }
+
+    private IEnumerator ShowNextDocumentAfterDelay()
+    {
+        awaitingNextDocument = true;
+        yield return new WaitForSecondsRealtime(nextDocumentDelay);
+        awaitingNextDocument = false;
+        ShowCurrentDocument();
+    }
+
+    private IEnumerator FinishAfterDelay()
+    {
+        awaitingNextDocument = true;
+        yield return new WaitForSecondsRealtime(nextDocumentDelay);
+        FinishMiniGame();
+    }
+
+    private void ShowCurrentDocument()
+    {
+        currentCase = DocumentCases[currentDocumentIndex % DocumentCases.Length];
+        HideStampMark();
+
+        if (documentTitleLabel != null)
+        {
+            documentTitleLabel.text = currentCase.Title;
+        }
+
+        if (documentBodyLabel != null)
+        {
+            documentBodyLabel.text = currentCase.Body;
+        }
+
+        RefreshHud("Belgedeki kişi veya şirket adıyla eşleşen kaşeyi seç.");
+    }
+
+    private void ApplyStampMark(StampDefinition stamp)
+    {
+        if (stampMarkImage == null || stampMarkLabel == null)
+        {
+            return;
+        }
+
+        stampMarkImage.color = new Color(stamp.Color.r, stamp.Color.g, stamp.Color.b, 0.22f);
+        stampMarkLabel.text = stamp.Label;
+        stampMarkLabel.color = stamp.Color;
+        stampMarkLabel.gameObject.SetActive(true);
+        stampMarkImage.gameObject.SetActive(true);
+    }
+
+    private void HideStampMark()
+    {
+        if (stampMarkImage != null)
+        {
+            stampMarkImage.gameObject.SetActive(false);
         }
     }
 
@@ -341,12 +392,17 @@ public sealed class StampMiniGameManager : MonoBehaviour
     {
         if (correctLabel != null)
         {
-            correctLabel.text = $"Dogru: {correctCount}";
+            correctLabel.text = $"Doğru: {correctCount}";
         }
 
         if (wrongLabel != null)
         {
-            wrongLabel.text = $"Yanlis: {wrongCount}";
+            wrongLabel.text = $"Yanlış: {wrongCount}";
+        }
+
+        if (progressLabel != null)
+        {
+            progressLabel.text = $"Belge: {Mathf.Min(currentDocumentIndex + 1, Mathf.Max(1, documentCount))}/{Mathf.Max(1, documentCount)}";
         }
 
         if (statusLabel != null)
@@ -357,7 +413,7 @@ public sealed class StampMiniGameManager : MonoBehaviour
 
     private void EnsureUi()
     {
-        if (panelRoot != null && documentParent != null && stampHome != null)
+        if (panelRoot != null && documentArea != null && stampHome != null && documentTitleLabel != null && stampMarkImage != null)
         {
             return;
         }
@@ -366,60 +422,146 @@ public sealed class StampMiniGameManager : MonoBehaviour
         panelRoot = OfficeMiniGameUi.CreateImage("Stamp Mini Game Panel", canvas.transform, new Color(0f, 0f, 0f, 0.58f));
         OfficeMiniGameUi.Stretch(panelRoot.GetComponent<RectTransform>(), Vector2.zero, Vector2.zero);
 
-        GameObject board = OfficeMiniGameUi.CreateImage("Stamp Board", panelRoot.transform, new Color(0.78f, 0.72f, 0.62f, 1f));
+        GameObject board = OfficeMiniGameUi.CreateImage("Stamp Board", panelRoot.transform, new Color(0.77f, 0.71f, 0.62f, 1f));
         RectTransform boardRect = board.GetComponent<RectTransform>();
-        boardRect.sizeDelta = new Vector2(1350f, 860f);
+        boardRect.sizeDelta = new Vector2(1280f, 800f);
         boardRect.anchoredPosition = Vector2.zero;
 
-        documentParent = new GameObject("Document Grid", typeof(RectTransform), typeof(GridLayoutGroup)).GetComponent<RectTransform>();
-        documentParent.transform.SetParent(board.transform, false);
-        documentParent.anchorMin = new Vector2(0f, 0f);
-        documentParent.anchorMax = new Vector2(1f, 1f);
-        documentParent.offsetMin = new Vector2(48f, 112f);
-        documentParent.offsetMax = new Vector2(-260f, -74f);
+        CreateHud(board.transform);
+        CreateDocumentArea(board.transform);
+        CreateStampRack(board.transform);
+        CreateResultPanel(board.transform);
+        CreateCloseButton(panelRoot.transform);
 
-        GridLayoutGroup grid = documentParent.GetComponent<GridLayoutGroup>();
-        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = 4;
-        grid.cellSize = new Vector2(220f, 250f);
-        grid.spacing = new Vector2(22f, 22f);
+        panelRoot.SetActive(false);
+    }
 
-        stampHome = OfficeMiniGameUi.CreateImage("Stamp Home", board.transform, new Color(0.34f, 0.22f, 0.18f, 1f)).GetComponent<RectTransform>();
-        stampHome.anchorMin = new Vector2(1f, 0.5f);
-        stampHome.anchorMax = new Vector2(1f, 0.5f);
-        stampHome.sizeDelta = new Vector2(180f, 130f);
-        stampHome.anchoredPosition = new Vector2(-130f, 80f);
-
-        correctLabel = OfficeMiniGameUi.CreateLabel("Correct", board.transform, "Dogru: 0", 24f, Color.white);
+    private void CreateHud(Transform board)
+    {
+        correctLabel = OfficeMiniGameUi.CreateLabel("Correct", board, "Doğru: 0", 24f, Color.white);
         RectTransform correctRect = correctLabel.GetComponent<RectTransform>();
         correctRect.anchorMin = new Vector2(0f, 1f);
         correctRect.anchorMax = new Vector2(0f, 1f);
         correctRect.sizeDelta = new Vector2(180f, 40f);
-        correctRect.anchoredPosition = new Vector2(135f, -42f);
+        correctRect.anchoredPosition = new Vector2(120f, -42f);
 
-        wrongLabel = OfficeMiniGameUi.CreateLabel("Wrong", board.transform, "Yanlis: 0", 24f, Color.white);
+        wrongLabel = OfficeMiniGameUi.CreateLabel("Wrong", board, "Yanlış: 0", 24f, Color.white);
         RectTransform wrongRect = wrongLabel.GetComponent<RectTransform>();
         wrongRect.anchorMin = new Vector2(0f, 1f);
         wrongRect.anchorMax = new Vector2(0f, 1f);
         wrongRect.sizeDelta = new Vector2(180f, 40f);
-        wrongRect.anchoredPosition = new Vector2(330f, -42f);
+        wrongRect.anchoredPosition = new Vector2(310f, -42f);
 
-        statusLabel = OfficeMiniGameUi.CreateLabel("Status", board.transform, string.Empty, 22f, Color.white);
+        progressLabel = OfficeMiniGameUi.CreateLabel("Progress", board, "Belge: 1/8", 24f, Color.white);
+        RectTransform progressRect = progressLabel.GetComponent<RectTransform>();
+        progressRect.anchorMin = new Vector2(0.5f, 1f);
+        progressRect.anchorMax = new Vector2(0.5f, 1f);
+        progressRect.sizeDelta = new Vector2(220f, 40f);
+        progressRect.anchoredPosition = new Vector2(0f, -42f);
+
+        statusLabel = OfficeMiniGameUi.CreateLabel("Status", board, string.Empty, 22f, Color.white);
         RectTransform statusRect = statusLabel.GetComponent<RectTransform>();
         statusRect.anchorMin = new Vector2(0f, 0f);
         statusRect.anchorMax = new Vector2(1f, 0f);
-        statusRect.offsetMin = new Vector2(48f, 32f);
-        statusRect.offsetMax = new Vector2(-260f, 84f);
+        statusRect.offsetMin = new Vector2(60f, 28f);
+        statusRect.offsetMax = new Vector2(-340f, 84f);
         statusLabel.alignment = TextAlignmentOptions.Left;
+    }
 
-        Button finishButton = OfficeMiniGameUi.CreateButton("Finish Stamp", board.transform, "BITIR", new Vector2(150f, 54f), new Color(0.22f, 0.42f, 0.55f, 1f), FinishMiniGame);
-        RectTransform finishRect = finishButton.GetComponent<RectTransform>();
-        finishRect.anchorMin = new Vector2(1f, 0f);
-        finishRect.anchorMax = new Vector2(1f, 0f);
-        finishRect.anchoredPosition = new Vector2(-130f, 58f);
+    private void CreateDocumentArea(Transform board)
+    {
+        GameObject paper = OfficeMiniGameUi.CreateImage("Report Document", board, new Color(0.98f, 0.96f, 0.9f, 1f));
+        documentArea = paper.GetComponent<RectTransform>();
+        documentArea.anchorMin = new Vector2(0f, 0.5f);
+        documentArea.anchorMax = new Vector2(0f, 0.5f);
+        documentArea.sizeDelta = new Vector2(760f, 610f);
+        documentArea.anchoredPosition = new Vector2(450f, 10f);
 
-        CreateResultPanel(board.transform);
-        CreateCloseButton(panelRoot.transform);
+        Outline outline = paper.AddComponent<Outline>();
+        outline.effectColor = new Color(0.3f, 0.24f, 0.16f, 0.72f);
+        outline.effectDistance = new Vector2(3f, -3f);
+
+        documentTitleLabel = OfficeMiniGameUi.CreateLabel("DocumentTitle", paper.transform, string.Empty, 34f, new Color(0.12f, 0.1f, 0.08f, 1f));
+        RectTransform titleRect = documentTitleLabel.GetComponent<RectTransform>();
+        titleRect.anchorMin = new Vector2(0f, 1f);
+        titleRect.anchorMax = new Vector2(1f, 1f);
+        titleRect.offsetMin = new Vector2(44f, -92f);
+        titleRect.offsetMax = new Vector2(-44f, -34f);
+        documentTitleLabel.alignment = TextAlignmentOptions.Left;
+
+        documentBodyLabel = OfficeMiniGameUi.CreateLabel("DocumentBody", paper.transform, string.Empty, 25f, new Color(0.16f, 0.13f, 0.09f, 1f));
+        RectTransform bodyRect = documentBodyLabel.GetComponent<RectTransform>();
+        bodyRect.anchorMin = new Vector2(0f, 0f);
+        bodyRect.anchorMax = new Vector2(1f, 1f);
+        bodyRect.offsetMin = new Vector2(48f, 150f);
+        bodyRect.offsetMax = new Vector2(-48f, -126f);
+        documentBodyLabel.alignment = TextAlignmentOptions.TopLeft;
+        documentBodyLabel.textWrappingMode = TextWrappingModes.Normal;
+
+        CreateDocumentLines(paper.transform);
+        CreateStampMark(paper.transform);
+    }
+
+    private void CreateDocumentLines(Transform paper)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            GameObject line = OfficeMiniGameUi.CreateImage($"Document Line {i + 1}", paper, new Color(0.65f, 0.61f, 0.52f, 0.25f));
+            RectTransform lineRect = line.GetComponent<RectTransform>();
+            lineRect.anchorMin = new Vector2(0f, 0f);
+            lineRect.anchorMax = new Vector2(1f, 0f);
+            lineRect.offsetMin = new Vector2(48f, 118f + i * 42f);
+            lineRect.offsetMax = new Vector2(-48f - (i % 3) * 46f, 122f + i * 42f);
+        }
+    }
+
+    private void CreateStampMark(Transform paper)
+    {
+        GameObject markObject = OfficeMiniGameUi.CreateImage("Selected Stamp Mark", paper, new Color(0.73f, 0.12f, 0.11f, 0.22f));
+        RectTransform markRect = markObject.GetComponent<RectTransform>();
+        markRect.anchorMin = new Vector2(1f, 0f);
+        markRect.anchorMax = new Vector2(1f, 0f);
+        markRect.sizeDelta = new Vector2(210f, 86f);
+        markRect.anchoredPosition = new Vector2(-172f, 96f);
+        markRect.localRotation = Quaternion.Euler(0f, 0f, -8f);
+
+        Outline markOutline = markObject.AddComponent<Outline>();
+        markOutline.effectColor = new Color(0.55f, 0.08f, 0.08f, 0.75f);
+        markOutline.effectDistance = new Vector2(2f, -2f);
+
+        stampMarkImage = markObject.GetComponent<Image>();
+        stampMarkLabel = OfficeMiniGameUi.CreateLabel("StampMarkLabel", markObject.transform, string.Empty, 28f, new Color(0.73f, 0.12f, 0.11f, 1f));
+        OfficeMiniGameUi.Stretch(stampMarkLabel.GetComponent<RectTransform>(), new Vector2(12f, 8f), new Vector2(-12f, -8f));
+        stampMarkLabel.enableAutoSizing = true;
+        stampMarkLabel.fontSizeMin = 18f;
+        stampMarkLabel.fontSizeMax = 28f;
+        HideStampMark();
+    }
+
+    private void CreateStampRack(Transform board)
+    {
+        GameObject rack = OfficeMiniGameUi.CreateImage("Stamp Rack", board, new Color(0.34f, 0.22f, 0.18f, 1f));
+        stampHome = rack.GetComponent<RectTransform>();
+        stampHome.anchorMin = new Vector2(1f, 0.5f);
+        stampHome.anchorMax = new Vector2(1f, 0.5f);
+        stampHome.sizeDelta = new Vector2(310f, 610f);
+        stampHome.anchoredPosition = new Vector2(-210f, 10f);
+
+        VerticalLayoutGroup layout = rack.AddComponent<VerticalLayoutGroup>();
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childControlWidth = false;
+        layout.childControlHeight = false;
+        layout.childForceExpandWidth = false;
+        layout.childForceExpandHeight = false;
+        layout.spacing = 20f;
+        layout.padding = new RectOffset(0, 0, 28, 28);
+
+        TextMeshProUGUI title = OfficeMiniGameUi.CreateLabel("StampRackTitle", board, "KAŞELER", 26f, Color.white);
+        RectTransform titleRect = title.GetComponent<RectTransform>();
+        titleRect.anchorMin = new Vector2(1f, 0.5f);
+        titleRect.anchorMax = new Vector2(1f, 0.5f);
+        titleRect.sizeDelta = new Vector2(310f, 42f);
+        titleRect.anchoredPosition = new Vector2(-210f, 342f);
     }
 
     private void CreateResultPanel(Transform parent)
@@ -445,20 +587,63 @@ public sealed class StampMiniGameManager : MonoBehaviour
         RectTransform closeRect = closeButton.GetComponent<RectTransform>();
         closeRect.anchorMin = new Vector2(0.5f, 0.5f);
         closeRect.anchorMax = new Vector2(0.5f, 0.5f);
-        closeRect.anchoredPosition = new Vector2(705f, 465f);
+        closeRect.anchoredPosition = new Vector2(665f, 435f);
     }
 
-    private sealed class DocumentRuntimeData
+    private static Vector2 GetStampVisualSize(StampShape shape)
     {
-        public readonly bool HasSignature;
-        public readonly TextMeshProUGUI StampMark;
-        public bool Stamped;
+        return new Vector2(194f, 72f);
+    }
 
-        public DocumentRuntimeData(bool hasSignature, TextMeshProUGUI stampMark)
+    private static string GetStampLabel(string stampId)
+    {
+        for (int i = 0; i < StampDefinitions.Length; i++)
         {
-            HasSignature = hasSignature;
-            StampMark = stampMark;
+            if (StampDefinitions[i].Id == stampId)
+            {
+                return StampDefinitions[i].Label.Replace("\n", " ");
+            }
         }
+
+        return stampId;
+    }
+
+    private readonly struct StampDefinition
+    {
+        public readonly string Id;
+        public readonly string Label;
+        public readonly Color Color;
+        public readonly StampShape Shape;
+
+        public StampDefinition(string id, string label, Color color, StampShape shape)
+        {
+            Id = id;
+            Label = label;
+            Color = color;
+            Shape = shape;
+        }
+    }
+
+    private readonly struct DocumentCase
+    {
+        public readonly string Title;
+        public readonly string Body;
+        public readonly string RequiredStampId;
+
+        public DocumentCase(string title, string body, string requiredStampId)
+        {
+            Title = title;
+            Body = body;
+            RequiredStampId = requiredStampId;
+        }
+    }
+
+    private enum StampShape
+    {
+        Rectangle,
+        Diamond,
+        Tall,
+        Wide,
     }
 
     private enum TimeoutBehavior

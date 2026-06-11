@@ -18,37 +18,37 @@ public sealed class CustomerFileSortingController : MonoBehaviour
     private static readonly string[] CorrectNames =
     {
         "Ahmet Arslan",
-        "Aylin Aydin",
-        "Baris Balci",
+        "Aylin Aydın",
+        "Barış Balcı",
         "Berk Demir",
-        "Cem Celik",
-        "Ceren Dogan",
+        "Cem Çelik",
+        "Ceren Doğan",
         "Deniz Duran",
         "Ece Ekinci",
         "Emir Ergin",
-        "Esra Guler",
-        "Faruk Gunes",
+        "Esra Güler",
+        "Faruk Güneş",
         "Gizem Kaya",
         "Hakan Keskin",
-        "Irem Kilic",
-        "Kaan Koc",
+        "İrem Kılıç",
+        "Kaan Koç",
         "Lale Kurt",
         "Mert Mutlu",
-        "Mina Ozturk",
+        "Mina Öztürk",
         "Nehir Polat",
-        "Onur Sari",
-        "Ozge Sahin",
-        "Pelin Tas",
+        "Onur Sarı",
+        "Özge Şahin",
+        "Pelin Taş",
         "Rana Tekin",
-        "Seda Ucar",
+        "Seda Uçar",
         "Selim Uzun",
-        "Sinem Yalcin",
-        "Tuna Yildiz",
-        "Umut Yilmaz",
-        "Volkan Yucel",
+        "Sinem Yalçın",
+        "Tuna Yıldız",
+        "Umut Yılmaz",
+        "Volkan Yücel",
         "Yasemin Zengin",
         "Zeynep Aksoy",
-        "Alp Basar",
+        "Alp Başar",
         "Burcu Can",
         "Canan Deniz",
     };
@@ -139,7 +139,7 @@ public sealed class CustomerFileSortingController : MonoBehaviour
         selectedIndex = 0;
         firstVisibleIndex = 0;
         panelRoot.SetActive(true);
-        statusLabel.text = "Musteri dosyalarini alfabetik siraya koy.";
+        statusLabel.text = "Müşteri dosyalarını alfabetik sıraya koy.";
         percentLabel.text = "Hata: %0";
         RefreshRows();
     }
@@ -230,11 +230,11 @@ public sealed class CustomerFileSortingController : MonoBehaviour
 
         if (wrongCount == 0)
         {
-            statusLabel.text = "Dogru. Tum dosyalar alfabetik sirada.";
+            statusLabel.text = "Doğru. Tüm dosyalar alfabetik sırada.";
             return;
         }
 
-        statusLabel.text = $"Siralamada hata var. {wrongCount} dosya yanlis yerde.";
+        statusLabel.text = $"Sıralamada hata var. {wrongCount} dosya yanlış yerde.";
     }
 
     private void BuildUi()
@@ -270,7 +270,7 @@ public sealed class CustomerFileSortingController : MonoBehaviour
         boardRect.sizeDelta = new Vector2(1220f, 880f);
         boardRect.anchoredPosition = Vector2.zero;
 
-        TextMeshProUGUI title = CreateLabel("Title", board.transform, "MUSTERI DOSYALARI", 34f, new Color(0.12f, 0.1f, 0.08f, 1f));
+        TextMeshProUGUI title = CreateLabel("Title", board.transform, "MÜŞTERİ DOSYALARI", 34f, new Color(0.12f, 0.1f, 0.08f, 1f));
         RectTransform titleRect = title.GetComponent<RectTransform>();
         titleRect.anchorMin = new Vector2(0f, 1f);
         titleRect.anchorMax = new Vector2(1f, 1f);
@@ -369,10 +369,10 @@ public sealed class CustomerFileSortingController : MonoBehaviour
 
     private void CreateControls(Transform parent)
     {
-        CreateControlButton(parent, "UpButton", "SECILIYI\nYUKARI AL", new Vector2(-165f, 205f), () => MoveSelected(-1));
-        CreateControlButton(parent, "DownButton", "SECILIYI\nASAGI AL", new Vector2(-165f, 125f), () => MoveSelected(1));
-        CreateControlButton(parent, "ScrollUpButton", "LISTEYI\nYUKARI", new Vector2(-165f, 15f), () => ScrollList(-1));
-        CreateControlButton(parent, "ScrollDownButton", "LISTEYI\nASAGI", new Vector2(-165f, -65f), () => ScrollList(1));
+        CreateControlButton(parent, "UpButton", "SEÇİLİYİ\nYUKARI AL", new Vector2(-165f, 205f), () => MoveSelected(-1));
+        CreateControlButton(parent, "DownButton", "SEÇİLİYİ\nAŞAĞI AL", new Vector2(-165f, 125f), () => MoveSelected(1));
+        CreateControlButton(parent, "ScrollUpButton", "LİSTEYİ\nYUKARI", new Vector2(-165f, 15f), () => ScrollList(-1));
+        CreateControlButton(parent, "ScrollDownButton", "LİSTEYİ\nAŞAĞI", new Vector2(-165f, -65f), () => ScrollList(1));
         CreateControlButton(parent, "CompleteButton", "TAMAM", new Vector2(-165f, -205f), CheckOrder, new Color(0.25f, 0.55f, 0.25f, 1f));
     }
 

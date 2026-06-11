@@ -48,7 +48,7 @@ public sealed class BreakManager : MonoBehaviour
 
         if (breakStatusLabel != null)
         {
-            breakStatusLabel.text = "Mola aktif. Gorev saatleri duraklatildi.";
+            breakStatusLabel.text = "Mola aktif. Görev saatleri duraklatıldı.";
         }
     }
 

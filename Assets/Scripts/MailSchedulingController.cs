@@ -11,12 +11,12 @@ public sealed class MailSchedulingController : MonoBehaviour
 
     private static readonly MailTask[] MailTasks =
     {
-        new MailTask("TOPLANTI SAATI HAKKINDA", "Toplanti", "Merhaba,\n\nBu hafta içerisinde gerçekleştirmeyi planladığımız toplantı için uygun olduğunuz saat aralıklarını paylaşabilir misiniz? Takvime göre planlama yapılacaktır."),
-        new MailTask("IS GORUSMESI SAATI", "Is gorusmesi", "Sayın Aday,\n\nÖn değerlendirme sürecini başarıyla tamamladınız. İş görüşmesinin planlanabilmesi adına müsait olduğunuz tarih ve saat bilgilerini iletmenizi rica ederiz."),
-        new MailTask("DOKTOR MUAYENESI", "Doktor muayenesi", "Merhaba,\n\nDoktor muayene randevunuzun oluşturulabilmesi için tercih ettiğiniz uygun saat aralığını bizimle paylaşabilir misiniz?"),
-        new MailTask("SEMINER SAATI", "Seminer", "Sayın Katılımcı,\n\nSeminerprogramının kesinleştirilebilmesi adına katılım sağlayabileceğiniz saat bilgisini tarafımıza iletmenizi rica ederiz."),
-        new MailTask("2. TOPLANTI SAATI", "2. toplanti", "Merhaba,\n\nEkip içi değerlendirme toplantısının planlaması yapılmaktadır. Katılım sağlayabileceğiniz uygun saat aralıklarını paylaşmanız rica olunur"),
-        new MailTask("YENI IS TALEBI", "Yeni is", "Merhaba,\n\nTarafınıza yönlendirilen yeni iş talebi için çalışmaya başlayabileceğiniz uygun saat bilgisini iletebilir misiniz? Planlama buna göre gerçekleştirilecektir."),
+        new MailTask("TOPLANTI SAATİ HAKKINDA", "Toplantı", "Merhaba,\n\nBu hafta içerisinde gerçekleştirmeyi planladığımız toplantı için uygun olduğunuz saat aralıklarını paylaşabilir misiniz? Takvime göre planlama yapılacaktır."),
+        new MailTask("İŞ GÖRÜŞMESİ SAATİ", "İş görüşmesi", "Sayın Aday,\n\nÖn değerlendirme sürecini başarıyla tamamladınız. İş görüşmesinin planlanabilmesi adına müsait olduğunuz tarih ve saat bilgilerini iletmenizi rica ederiz."),
+        new MailTask("DOKTOR MUAYENESİ", "Doktor muayenesi", "Merhaba,\n\nDoktor muayene randevunuzun oluşturulabilmesi için tercih ettiğiniz uygun saat aralığını bizimle paylaşabilir misiniz?"),
+        new MailTask("SEMİNER SAATİ", "Seminer", "Sayın Katılımcı,\n\nSeminer programının kesinleştirilebilmesi adına katılım sağlayabileceğiniz saat bilgisini tarafımıza iletmenizi rica ederiz."),
+        new MailTask("2. TOPLANTI SAATİ", "2. toplantı", "Merhaba,\n\nEkip içi değerlendirme toplantısının planlaması yapılmaktadır. Katılım sağlayabileceğiniz uygun saat aralıklarını paylaşmanız rica olunur."),
+        new MailTask("YENİ İŞ TALEBİ", "Yeni iş", "Merhaba,\n\nTarafınıza yönlendirilen yeni iş talebi için çalışmaya başlayabileceğiniz uygun saat bilgisini iletebilir misiniz? Planlama buna göre gerçekleştirilecektir."),
     };
 
     private static readonly string[] AvailableHours =
@@ -102,7 +102,7 @@ public sealed class MailSchedulingController : MonoBehaviour
         hourByMailIndex.Clear();
         mailIndexByHour.Clear();
         panelRoot.SetActive(true);
-        SelectMail(0, "Sol listeden bir mail sec veya bu mail icin saat belirle.");
+        SelectMail(0, "Sol listeden bir mail seç veya bu mail için saat belirle.");
     }
 
     private void SelectMail(int mailIndex, string statusText = "")
@@ -111,8 +111,8 @@ public sealed class MailSchedulingController : MonoBehaviour
         MailTask mailTask = MailTasks[selectedMailIndex];
 
         mailTitleLabel.text = mailTask.Title;
-        mailBodyLabel.text = $"{mailTask.Body}\n\nSure: 1 saat";
-        statusLabel.text = string.IsNullOrEmpty(statusText) ? "Bu mail icin uygun bir saat sec." : statusText;
+        mailBodyLabel.text = $"{mailTask.Body}\n\nSüre: 1 saat";
+        statusLabel.text = string.IsNullOrEmpty(statusText) ? "Bu mail için uygun bir saat seç." : statusText;
 
         UpdateInboxVisuals();
         UpdateProgressLabel();
@@ -123,7 +123,7 @@ public sealed class MailSchedulingController : MonoBehaviour
     {
         if (mailIndexByHour.TryGetValue(hour, out int existingMailIndex) && existingMailIndex != selectedMailIndex)
         {
-            SelectMail(selectedMailIndex, $"{hour} zaten '{MailTasks[existingMailIndex].InboxTitle}' icin secildi. Farkli saat sec.");
+            SelectMail(selectedMailIndex, $"{hour} zaten '{MailTasks[existingMailIndex].InboxTitle}' için seçildi. Farklı saat seç.");
             return;
         }
 
@@ -136,8 +136,8 @@ public sealed class MailSchedulingController : MonoBehaviour
         mailIndexByHour[hour] = selectedMailIndex;
 
         string nextStatus = hourByMailIndex.Count == MailTasks.Length
-            ? "Tum mailler cakisma olmadan planlandi."
-            : $"{hour} kaydedildi. Soldan siradaki maili sec.";
+            ? "Tüm mailler çakışma olmadan planlandı."
+            : $"{hour} kaydedildi. Soldan sıradaki maili seç.";
 
         SelectMail(selectedMailIndex, nextStatus);
     }
@@ -340,7 +340,7 @@ public sealed class MailSchedulingController : MonoBehaviour
 
     private void UpdateProgressLabel()
     {
-        progressLabel.text = $"{hourByMailIndex.Count}/{MailTasks.Length} planlandi";
+        progressLabel.text = $"{hourByMailIndex.Count}/{MailTasks.Length} planlandı";
     }
 
     private void UpdateHourButtonVisuals()

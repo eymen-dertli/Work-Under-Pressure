@@ -104,6 +104,8 @@ public class AudioManager : MonoBehaviour
 
     public static void PlaySfx(AudioSource source, AudioClip clip)
     {
+        EnsurePreferencesLoaded();
+
         if (source == null || clip == null || !SoundEnabled)
         {
             return;

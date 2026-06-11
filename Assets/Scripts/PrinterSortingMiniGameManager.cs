@@ -18,9 +18,9 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
     {
         "Arda Tekstil",
         "Mavi Lojistik",
-        "Kuzey Gida",
-        "Nova Yazilim",
-        "Atlas Insaat",
+        "Kuzey Gıda",
+        "Nova Yazılım",
+        "Atlas İnşaat",
         "Luna Medikal",
     };
     [SerializeField] private int paperCount = 12;
@@ -74,7 +74,7 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
         panelRoot.SetActive(true);
         resultPanel.SetActive(false);
         StartTaskTimer();
-        RefreshHud("Yazicidan cikan kagitlari dogru sirket dosyasina birak.");
+        RefreshHud("Yazıcıdan çıkan kağıtları doğru şirket dosyasına bırak.");
     }
 
     public void CloseMiniGame()
@@ -98,8 +98,8 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
         }
 
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sonuc\nPuan: {score}\nHata: {mistakes}";
-        RefreshHud("Sirket dosyalama gorevi tamamlandi.");
+        resultLabel.text = $"Sonuç\nPuan: {score}\nHata: {mistakes}";
+        RefreshHud("Şirket dosyalama görevi tamamlandı.");
     }
 
     private void StartTaskTimer()
@@ -123,8 +123,8 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
         }
 
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sure Bitti\nPuan: {score}\nHata: {mistakes}\nGorev basarisiz.";
-        RefreshHud("Sure bitti. Gorev basarisiz.");
+        resultLabel.text = $"Süre Bitti\nPuan: {score}\nHata: {mistakes}\nGörev başarısız.";
+        RefreshHud("Süre bitti. Görev başarısız.");
     }
 
     private void HandleDeskObjectClicked(ClickableDeskObject clickedObject)
@@ -165,9 +165,9 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
 
         companyNames.Add("Arda Tekstil");
         companyNames.Add("Mavi Lojistik");
-        companyNames.Add("Kuzey Gida");
-        companyNames.Add("Nova Yazilim");
-        companyNames.Add("Atlas Insaat");
+        companyNames.Add("Kuzey Gıda");
+        companyNames.Add("Nova Yazılım");
+        companyNames.Add("Atlas İnşaat");
         companyNames.Add("Luna Medikal");
     }
 
@@ -272,13 +272,13 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
         {
             score += 10;
             sortedCount++;
-            RefreshHud("Dogru dosya.");
+            RefreshHud("Doğru dosya.");
             Destroy(item.gameObject);
         }
         else
         {
             mistakes++;
-            RefreshHud("Yanlis dosya. Kagit eski yerine dondu.");
+            RefreshHud("Yanlış dosya. Kağıt eski yerine döndü.");
         }
 
         if (sortedCount >= paperCount)
@@ -363,7 +363,7 @@ public sealed class PrinterSortingMiniGameManager : MonoBehaviour
         statusRect.offsetMax = new Vector2(-260f, 82f);
         statusLabel.alignment = TextAlignmentOptions.Left;
 
-        Button finishButton = OfficeMiniGameUi.CreateButton("Finish Printer", board.transform, "BITIR", new Vector2(150f, 54f), new Color(0.22f, 0.42f, 0.55f, 1f), FinishMiniGame);
+        Button finishButton = OfficeMiniGameUi.CreateButton("Finish Printer", board.transform, "BİTİR", new Vector2(150f, 54f), new Color(0.22f, 0.42f, 0.55f, 1f), FinishMiniGame);
         RectTransform finishRect = finishButton.GetComponent<RectTransform>();
         finishRect.anchorMin = new Vector2(1f, 0f);
         finishRect.anchorMax = new Vector2(1f, 0f);

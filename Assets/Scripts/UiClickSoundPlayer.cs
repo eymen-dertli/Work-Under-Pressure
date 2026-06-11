@@ -6,8 +6,12 @@ using UnityEngine.UI;
 public sealed class UiClickSoundPlayer : MonoBehaviour
 {
     private const string PlayerObjectName = "[UI Click Sound Player]";
-    private const string ClickClipResourcePath = "Audio/Mouse_Click";
     private const float RescanInterval = 0.35f;
+    private static readonly string[] ClickClipResourcePaths =
+    {
+        "Audio/Mouse_Click",
+        "Audio/mouse_click",
+    };
 
     private static UiClickSoundPlayer instance;
     private AudioSource audioSource;
@@ -70,7 +74,7 @@ public sealed class UiClickSoundPlayer : MonoBehaviour
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
 
-        clickClip = Resources.Load<AudioClip>(ClickClipResourcePath);
+        clickClip = LoadClickClip();
         StartCoroutine(ScanButtonsLoop());
     }
 
@@ -104,7 +108,7 @@ public sealed class UiClickSoundPlayer : MonoBehaviour
         {
             if (!missingClipWarned)
             {
-                Debug.LogWarning($"Click sound clip could not be loaded from Resources/{ClickClipResourcePath}.");
+                Debug.LogWarning($"Click sound clip could not be loaded from Resources/{string.Join(" or Resources/", ClickClipResourcePaths)}.");
                 missingClipWarned = true;
             }
 
@@ -112,6 +116,20 @@ public sealed class UiClickSoundPlayer : MonoBehaviour
         }
 
         AudioManager.PlaySfx(audioSource, clickClip);
+    }
+
+    private static AudioClip LoadClickClip()
+    {
+        foreach (string resourcePath in ClickClipResourcePaths)
+        {
+            AudioClip clip = Resources.Load<AudioClip>(resourcePath);
+            if (clip != null)
+            {
+                return clip;
+            }
+        }
+
+        return null;
     }
 }
 

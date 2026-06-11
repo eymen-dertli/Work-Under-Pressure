@@ -68,7 +68,7 @@ public sealed class TrashMiniGameManager : MonoBehaviour
         panelRoot.SetActive(true);
         resultPanel.SetActive(false);
         StartTaskTimer();
-        RefreshHud("Yesil kelime iceren kagitlari cope firlat.");
+        RefreshHud("Yeşil kelime içeren kağıtları çöpe fırlat.");
     }
 
     public void CloseMiniGame()
@@ -93,8 +93,8 @@ public sealed class TrashMiniGameManager : MonoBehaviour
         }
 
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sonuc\nPuan: {score}\nHata: {mistakes}";
-        statusLabel.text = "Mini oyun tamamlandi.";
+        resultLabel.text = $"Sonuç\nPuan: {score}\nHata: {mistakes}";
+        statusLabel.text = "Mini oyun tamamlandı.";
     }
 
     private void StartTaskTimer()
@@ -119,8 +119,8 @@ public sealed class TrashMiniGameManager : MonoBehaviour
 
         EnsureUi();
         resultPanel.SetActive(true);
-        resultLabel.text = $"Sure Bitti\nPuan: {score}\nHata: {mistakes}\nGorev basarisiz.";
-        RefreshHud("Sure bitti. Gorev basarisiz.");
+        resultLabel.text = $"Süre Bitti\nPuan: {score}\nHata: {mistakes}\nGörev başarısız.";
+        RefreshHud("Süre bitti. Görev başarısız.");
     }
 
     private void HandleDeskObjectClicked(ClickableDeskObject clickedObject)
@@ -200,13 +200,13 @@ public sealed class TrashMiniGameManager : MonoBehaviour
 
     private string BuildPaperText(bool shouldThrow, int index)
     {
-        string[] greenWords = { "IPTAL", "COP", "ESKI", "TASLAK", "SIL" };
-        string[] redWords = { "SAKLA", "ONEMLI", "IMZA", "ARSIV", "KAYIT" };
+        string[] greenWords = { "İPTAL", "ÇÖP", "ESKİ", "TASLAK", "SİL" };
+        string[] redWords = { "SAKLA", "ÖNEMLİ", "İMZA", "ARŞİV", "KAYIT" };
         string word = shouldThrow
             ? $"<color=#2FA84F>{greenWords[index % greenWords.Length]}</color>"
             : $"<color=#D83B35>{redWords[index % redWords.Length]}</color>";
 
-        return $"A4 NOT\n\n{word}\n\nKisa ofis yazisi\nkontrol edildi";
+        return $"A4 NOT\n\n{word}\n\nKısa ofis yazısı\nkontrol edildi";
     }
 
     private void HandleTrashDrop(DraggableItem item, DropZone zone, bool accepted)
@@ -222,12 +222,12 @@ public sealed class TrashMiniGameManager : MonoBehaviour
         {
             score += 10;
             correctPapersThrown++;
-            RefreshHud("Dogru kagit cope girdi.");
+            RefreshHud("Doğru kağıt çöpe girdi.");
         }
         else
         {
             mistakes++;
-            RefreshHud("Kirmizi kelimeli kagit atildi. Hata yazildi.");
+            RefreshHud("Kırmızı kelimeli kağıt atıldı. Hata yazıldı.");
         }
 
         Destroy(item.gameObject);
@@ -289,7 +289,7 @@ public sealed class TrashMiniGameManager : MonoBehaviour
         trashDropZone.Configure("trash", "paper", true);
         trashDropZone.ItemEvaluated += HandleTrashDrop;
 
-        TextMeshProUGUI trashLabel = OfficeMiniGameUi.CreateLabel("TrashLabel", trash.transform, "COP\nKUTUSU", 24f, Color.white);
+        TextMeshProUGUI trashLabel = OfficeMiniGameUi.CreateLabel("TrashLabel", trash.transform, "ÇÖP\nKUTUSU", 24f, Color.white);
         OfficeMiniGameUi.Stretch(trashLabel.GetComponent<RectTransform>(), Vector2.zero, Vector2.zero);
 
         scoreLabel = OfficeMiniGameUi.CreateLabel("Score", desk.transform, "Puan: 0", 24f, Color.white);
@@ -314,7 +314,7 @@ public sealed class TrashMiniGameManager : MonoBehaviour
         statusRect.offsetMax = new Vector2(-320f, 80f);
         statusLabel.alignment = TextAlignmentOptions.Left;
 
-        Button finishButton = OfficeMiniGameUi.CreateButton("Finish", desk.transform, "BITIR", new Vector2(150f, 54f), new Color(0.22f, 0.42f, 0.55f, 1f), FinishMiniGame);
+        Button finishButton = OfficeMiniGameUi.CreateButton("Finish", desk.transform, "BİTİR", new Vector2(150f, 54f), new Color(0.22f, 0.42f, 0.55f, 1f), FinishMiniGame);
         RectTransform finishRect = finishButton.GetComponent<RectTransform>();
         finishRect.anchorMin = new Vector2(1f, 0f);
         finishRect.anchorMax = new Vector2(1f, 0f);

@@ -94,7 +94,7 @@ public sealed class ContractSigningController : MonoBehaviour
         panelRoot.SetActive(true);
         signaturePad.ShowGuideForPage(currentPage);
         signaturePad.ClearSignature();
-        UpdateLabels("Sag alttaki kutunun icine imza at.");
+        UpdateLabels("Sağ alttaki kutunun içine imza at.");
     }
 
     public void CompleteCurrentSignature()
@@ -103,20 +103,20 @@ public sealed class ContractSigningController : MonoBehaviour
 
         if (currentPage >= TotalPages)
         {
-            UpdateLabels("Tum sozlesmeler imzalandi.");
+            UpdateLabels("Tüm sözleşmeler imzalandı.");
             panelRoot.SetActive(false);
             return;
         }
 
         currentPage++;
         signaturePad.ShowGuideForPage(currentPage);
-        UpdateLabels("Imza kabul edildi. Sonraki sayfa.");
+        UpdateLabels("İmza kabul edildi. Sonraki sayfa.");
     }
 
-    public void ReportSignatureMistake()
+    public void ReportSignatureMistake(string message = "İmza kutunun dışına taştı. Tekrar dene.")
     {
         mistakeCount++;
-        UpdateLabels("Imza kutunun disina tasti. Tekrar dene.");
+        UpdateLabels(message);
     }
 
     private void BuildUi()
@@ -166,7 +166,7 @@ public sealed class ContractSigningController : MonoBehaviour
         paperRect.sizeDelta = new Vector2(640f, 820f);
         paperRect.anchoredPosition = Vector2.zero;
 
-        pageLabel = CreateLabel("PageLabel", paper.transform, "Sozlesme 1/12", 30f, new Color(0.12f, 0.12f, 0.12f, 1f));
+        pageLabel = CreateLabel("PageLabel", paper.transform, "Sözleşme 1/12", 30f, new Color(0.12f, 0.12f, 0.12f, 1f));
         RectTransform pageRect = pageLabel.GetComponent<RectTransform>();
         pageRect.anchorMin = new Vector2(0f, 1f);
         pageRect.anchorMax = new Vector2(1f, 1f);
@@ -211,7 +211,7 @@ public sealed class ContractSigningController : MonoBehaviour
         outline.effectColor = new Color(0.1f, 0.1f, 0.1f, 1f);
         outline.effectDistance = new Vector2(2f, -2f);
 
-        TextMeshProUGUI label = CreateLabel("SignatureBoxLabel", box.transform, "IMZA", 16f, new Color(0.2f, 0.2f, 0.2f, 0.75f));
+        TextMeshProUGUI label = CreateLabel("SignatureBoxLabel", box.transform, "İMZA", 16f, new Color(0.2f, 0.2f, 0.2f, 0.75f));
         RectTransform labelRect = label.GetComponent<RectTransform>();
         labelRect.anchorMin = new Vector2(0f, 1f);
         labelRect.anchorMax = new Vector2(1f, 1f);
@@ -280,7 +280,7 @@ public sealed class ContractSigningController : MonoBehaviour
 
     private void UpdateLabels(string statusText)
     {
-        pageLabel.text = $"Sozlesme {currentPage}/{TotalPages}";
+        pageLabel.text = $"Sözleşme {currentPage}/{TotalPages}";
         statusLabel.text = mistakeCount > 0 ? $"{statusText} Hata: {mistakeCount}" : statusText;
     }
 
